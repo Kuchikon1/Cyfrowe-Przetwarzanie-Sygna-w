@@ -8,6 +8,36 @@ import random
 iteration = 0
 temp = 0
 
+# generacja szumów
+# 1 o rozkładzie stałym / w przedziale od a do b ma stałą wartość poza ma 0
+# 2 o rozkładzie gaussowskim / jakiś program na wikampie jest
+# 3 sinus ze wzoru Acos(2pif0t + fi0)
+# 4 sinus są tu https://pl.wikipedia.org/wiki/Sygna%C5%82_okresowy
+# 5 wyżej
+# 6 prostąktny czyli ma dwie wartości
+# 7 prostokątny (chyba) o tych samych grubościach między skokiem
+# 8 trójkatny taki jak moduł wygląda
+# 9 skokowa przyjmuje 1 dla wartości nieujemnych dla ujemnych ma 0
+# 10 impuls skokowy ma wartość 0 z wyjątkiem pojedyńczego punktu
+# 11 nie mam pojęcia XD
+
+
+def func_rand(exp, var):
+    res = (((12.0 * var)**0.5) * ((random.randint(0, 100) - 50.0)/100.0)) + exp
+    return res
+
+
+def func_gauss(exp, var):
+    n = 10
+    x = 0.0
+    for i in range(n):
+        x += random.random()
+    res = (x * (var/n) ** 0.5) + exp
+    return res
+
+
+#--------------------------------
+
 
 def end_algorithm(old_cen, new_cen, k):
     # print("old cen:")
