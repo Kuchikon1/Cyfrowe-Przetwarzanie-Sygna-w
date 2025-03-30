@@ -5,6 +5,19 @@ from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 
+signal_map = {
+    "S1": "Szum o rozkładzie jednostajnym",
+    "S2": "Szum Gaussowski",
+    "S3": "Sygnał sinusoidalny",
+    "S4": "Sygnał sinusoidalny wyprostowany jednopołówkowo",
+    "S5": "Sygnał sinusoidalny wyprostowany dwupołówkowo",
+    "S6": "Sygnał prostokątny",
+    "S7": "Sygnał prostokątny symetryczny",
+    "S8": "Sygnał trójkątny",
+    "S9": "Skok jednostkowy",
+    "S10": "Impuls jednostkowy",
+    "S11": "Szum impulsowy"
+}
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
@@ -37,7 +50,6 @@ def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_
 
     return t, signal
 
-
 def plot_signal(ax, time, signal, title="Wykres sygnału"):
     ax.clear()
     ax.plot(time, signal, label="Sygnał")
@@ -58,7 +70,8 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
 
 
 def update_plot():
-    signal_type = signal_var.get()
+    full_signal_name = signal_var.get()
+    signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
     frequency = float(freq_var.get())
     amplitude = float(amplitude_var.get())
     duration = float(duration_var.get())
@@ -96,8 +109,8 @@ frame_plot.pack(side="right", padx=10, pady=10)
 # Wybór sygnału
 signal_var = StringVar(value="")
 Label(frame_controls, text="Wybierz sygnał").pack()
-signals = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"]
-signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signals)
+signal_names = list(signal_map.values())
+signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signal_names)
 signal_menu.pack()
 
 # Parametry sygnału
