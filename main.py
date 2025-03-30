@@ -132,6 +132,28 @@ def on_save():
 def on_load():
     time, signal = fo.load_signal()
     if time is not None and signal is not None:
+        frequency = 1 / (time[1] - time[0])
+        amplitude = np.max(signal) - np.min(signal)
+        duration = time[-1]
+        sampling_rate = len(time) / duration
+
+        freq_var.set(f"{frequency:.2f}")
+        amplitude_var.set(f"{amplitude:.2f}")
+        duration_var.set(f"{duration:.2f}")
+        sampling_var.set(f"{sampling_rate:.2f}")
+        bins_var.set("10")
+
+        mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal,
+                                                                                                  frequency)
+        params_text = (
+            f"Wartość średnia: {mean_value:.4f}\n"
+            f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
+            f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
+            f"Wariancja: {variance:.4f}\n"
+            f"Moc średnia: {mean_power:.4f}"
+        )
+        params_label.config(text=params_text)
+
         plot_signal(ax1, time, signal, "Wczytany sygnał")
         plot_histogram(ax2, signal, "Histogram wczytanego sygnału", 10)
         canvas.draw()
