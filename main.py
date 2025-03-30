@@ -132,16 +132,19 @@ def on_save():
 
     time, signal = generate_signal(signal_type, float(freq_var.get()), float(amplitude_var.get()),
                                    float(duration_var.get()), int(sampling_var.get()))
-    fo.save_signal(time, signal, frequency, amplitude, duration, sampling_rate)
+    fo.save_signal(time, signal, frequency, amplitude, duration, sampling_rate, signal_type)
 
 def on_load():
-    time, signal, frequency, amplitude, duration, sampling_rate = fo.load_signal()
+    time, signal, frequency, amplitude, duration, sampling_rate, signal_type = fo.load_signal()
     if time is not None and signal is not None:
         freq_var.set(f"{frequency}")
         amplitude_var.set(f"{amplitude}")
         duration_var.set(f"{duration}")
         sampling_var.set(f"{sampling_rate}")
         bins_var.set("10")
+
+        if signal_type in signal_map:
+            signal_var.set(signal_map[signal_type])
 
         mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal,
                                                                                                   frequency)
