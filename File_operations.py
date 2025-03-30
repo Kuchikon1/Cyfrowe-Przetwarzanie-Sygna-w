@@ -3,11 +3,11 @@ import numpy as np
 from tkinter import filedialog
 
 
-def save_signal(time, signal, freq, amplitude, duration, sampling_rate, signal_type):
+def save_signal(time, signal, params, signal_type):
     file_path = filedialog.asksaveasfilename(defaultextension=".pkl", filetypes=[("Plik Pickle", "*.pkl")])
     if file_path:
         with open(file_path, 'wb') as f:
-            pickle.dump((time, signal, freq, amplitude, duration, sampling_rate, signal_type), f)
+            pickle.dump((time, signal, params, signal_type), f)
         print(f"Sygnał zapisany do {file_path}")
 
 
@@ -15,11 +15,11 @@ def load_signal():
     file_path = filedialog.askopenfilename(defaultextension=".pkl", filetypes=[("Plik Pickle", "*.pkl")])
     if file_path:
         with open(file_path, 'rb') as f:
-            time, signal, freq, amplitude, duration, sampling_rate, signal_type = pickle.load(f)
+            time, signal, params, signal_type = pickle.load(f)
         print(f"Sygnał wczytany z {file_path}")
-        return time, signal, freq, amplitude, duration, sampling_rate, signal_type
+        return time, signal, params, signal_type
     else:
-        return None, None, None, None, None, None, None
+        return None, None, None, None
 
 
 def add_signals(time1, signal1, time2, signal2):

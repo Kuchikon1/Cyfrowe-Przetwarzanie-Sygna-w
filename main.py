@@ -128,11 +128,6 @@ def calculate_signal_parameters(t, signal):
 def update_plot():
     full_signal_name = signal_var.get()
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
-
-    frequency = float(freq_var.get())
-    amplitude = float(amplitude_var.get())
-    duration = float(duration_var.get())
-    sampling_rate = int(sampling_var.get())
     bins = int(bins_var.get())
 
     time, signal = generate_signal(signal_type)
@@ -154,38 +149,34 @@ def update_plot():
 
 def on_save():
     full_signal_name = signal_var.get()
-    signal_type = [key for key, value in signal_map.items() if value == full_signal_name]
+    signal_type = next((key for key, value in signal_map.items() if value == full_signal_name), None)
 
     if not signal_type:
         print(f"Błąd: Nieznany sygnał '{full_signal_name}'")
         return
 
-    signal_type = signal_type[0]
     time, signal = generate_signal(signal_type)
-    fo.save_signal(time, signal, float(freq_var.get()), float(amplitude_var.get()), float(duration_var.get()), int(sampling_var.get()))
+
+    # Pobranie parametrów
+    params = {abbr: float(entry.get()) for abbr, entry in param_entries.items()}
+
+    fo.save_signal(time, signal, params, signal_type)
 
 
 def on_load():
-    time, signal, frequency, amplitude, duration, sampling_rate, signal_type = fo.load_signal()
+    time, signal, params, signal_type = fo.load_signal()
+
     if time is not None and signal is not None:
-        freq_var.set(f"{frequency:.0f}")
-        amplitude_var.set(f"{amplitude:.0f}")
-        duration_var.set(f"{duration:.0f}")
-        sampling_var.set(f"{sampling_rate:.0f}")
-        bins_var.set("10")
+        # Ustawienie wartości pól zgodnie z wczytanym sygnałem
+        signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
 
-        # mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal)
-        # params_text = (
-        #     f"Wartość średnia: {mean_value:.4f}\n"
-        #     f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
-        #     f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
-        #     f"Wariancja: {variance:.4f}\n"
-        #     f"Moc średnia: {mean_power:.4f}"
-        # )
-        # params_label.config(text=params_text)
+        for abbr, value in params.items():
+            if abbr in param_entries:
+                param_entries[abbr].delete(0, "end")
+                param_entries[abbr].insert(0, str(value))
 
-        plot_signal(ax1, time, signal, "Wczytany sygnał")
-        plot_histogram(ax2, signal, "Histogram wczytanego sygnału", 10)
+        plot_signal(ax1, time, signal, f"Wczytany sygnał ({signal_type})")
+        plot_histogram(ax2, signal, f"Histogram wczytanego sygnału", 10)
         canvas.draw()
 
 # Tworzenie GUI
