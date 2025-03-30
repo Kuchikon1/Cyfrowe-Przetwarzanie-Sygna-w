@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, DISABLED, NORMAL
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 
@@ -18,6 +18,41 @@ signal_map = {
     "S11": "Szum impulsowy"
 }
 
+signal_params = [
+    "Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):",
+    "Okres podstawowy (T):", "Współczynnik wypełnienia (kw):", "ts",
+    "Numer próbki dla której następuje skos (ns):", "numer pierwszej próbki (n1):", "l",
+    "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"
+]
+
+signal_params_map = {
+    "S1": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
+    "S2": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
+    "S3": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
+    "S4": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
+    "S5": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
+    "S6": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Współczynnik wypełnienia (kw):"],
+    "S7": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Współczynnik wypełnienia (kw):"],
+    "S8": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Współczynnik wypełnienia (kw):"],
+    "S9": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "ts"],
+    "S10": ["Amplituda (A):", "Numer próbki dla której następuje skos (ns):", "numer pierwszej próbki (n1):", "l", "Częstotliwość próbkowania (f):"],
+    "S11": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"]
+}
+
+
+def update_param_fields(*args):
+    signal_type = [key for key, value in signal_map.items() if value == signal_var.get()]
+    if not signal_type:
+        return
+
+    signal_type = signal_type[0]
+    active_params = signal_params_map.get(signal_type, [])
+
+    for param, entry in param_entries.items():
+        if param in active_params:
+            entry.config(state=NORMAL)
+        else:
+            entry.config(state=DISABLED)
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
@@ -203,18 +238,35 @@ root.title("Generator Sygnałów")
 frame_buttons = Frame(root)
 frame_buttons.pack(side="top", anchor="w", padx=10, pady=10)
 
-frame_controls = Frame(root)
-frame_controls.pack(side="left", padx=10, pady=10)
-
 frame_plot = Frame(root)
 frame_plot.pack(side="right", padx=10, pady=10)
 
-# Wybór sygnału
 signal_var = StringVar(value="")
-Label(frame_controls, text="Wybierz sygnał").pack()
-signal_names = list(signal_map.values())
-signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signal_names)
-signal_menu.pack()
+signal_var.trace("w", update_param_fields)
+
+frame_controls = Frame(root)
+frame_controls.pack(padx=13, pady=10)
+
+Label(frame_controls, text="Wybierz sygnał:").pack()
+signal_var = StringVar()
+signal_var.trace("w", update_param_fields)
+signal_combo = ttk.Combobox(frame_controls, textvariable=signal_var, values=list(signal_map.values()), width=35)
+signal_combo.pack()
+
+param_frame = Frame(root)
+param_frame.pack(padx=0, pady=0)
+
+param_entries = {}
+for param_list in signal_params_map.values():
+    for param in param_list:
+        if param not in param_entries:
+            frame = Frame(param_frame)
+            frame.pack(anchor="w", padx=0, pady=2)
+            Label(frame, text=param).pack(anchor="w", padx=15)
+            entry = Entry(frame)
+            entry.pack(anchor="w", padx=15)
+            entry.config(state=DISABLED)
+            param_entries[param] = entry
 
 # Parametry sygnału
 freq_var = StringVar(value="0")
@@ -223,24 +275,9 @@ duration_var = StringVar(value="0")
 sampling_var = StringVar(value="0")
 bins_var = StringVar(value="0")
 
-Label(frame_controls, text="Częstotliwość (Hz)").pack()
-Entry(frame_controls, textvariable=freq_var).pack()
+Button(param_frame, text="Generuj", command=update_plot).pack()
 
-Label(frame_controls, text="Amplituda").pack()
-Entry(frame_controls, textvariable=amplitude_var).pack()
-
-Label(frame_controls, text="Czas trwania (s)").pack()
-Entry(frame_controls, textvariable=duration_var).pack()
-
-Label(frame_controls, text="Próbkowanie (Hz)").pack()
-Entry(frame_controls, textvariable=sampling_var).pack()
-
-Label(frame_controls, text="Liczba przedziałów histogramu").pack()
-Entry(frame_controls, textvariable=bins_var).pack()
-
-Button(frame_controls, text="Generuj", command=update_plot).pack()
-
-# Dodanie przycisków "Zapisz" i "Wczytaj"
+# Przyciski Górne
 Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
 Button(frame_buttons, text="Wczytaj sygnał", command=on_load).pack(side="left", padx=5)
 
@@ -255,7 +292,7 @@ plt.subplots_adjust(hspace=0.4)
 canvas = FigureCanvasTkAgg(fig, master=frame_plot)
 canvas.get_tk_widget().pack()
 
-params_label = Label(frame_controls, text="Wartość średnia: 0.0000\n"
+params_label = Label(param_frame, text="Wartość średnia: 0.0000\n"
                                               "Wartość średnia bezwzględna: 0.0000\n"
                                               "Wartość skuteczna (RMS): 0.0000\n"
                                               "Wariancja: 0.0000\n"
