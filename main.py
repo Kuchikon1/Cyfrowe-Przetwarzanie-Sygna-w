@@ -50,9 +50,12 @@ def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_
 
     return t, signal
 
-def plot_signal(ax, time, signal, title="Wykres sygnału"):
+def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.clear()
-    ax.plot(time, signal, label="Sygnał")
+    if signal_type in ["S9", "S10", "S11"]:
+        ax.scatter(time, signal, label="Sygnał", color='red', marker='o')
+    else:
+        ax.plot(time, signal, label="Sygnał")
     ax.set_xlabel("Czas [s]")
     ax.set_ylabel("Amplituda")
     ax.set_title(title)
@@ -112,7 +115,7 @@ def update_plot():
     )
     params_label.config(text=params_text)
 
-    plot_signal(ax1, time, signal, f"Sygnał {signal_type}")
+    plot_signal(ax1, time, signal, signal_type, f"Sygnał {signal_type}")
     plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     canvas.draw()
 
@@ -157,7 +160,7 @@ def on_load():
         )
         params_label.config(text=params_text)
 
-        plot_signal(ax1, time, signal, "Wczytany sygnał")
+        plot_signal(ax1, time, signal, signal_type, "Wczytany sygnał")
         plot_histogram(ax2, signal, "Histogram wczytanego sygnału", 10)
         canvas.draw()
 
