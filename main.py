@@ -3,65 +3,11 @@ import matplotlib.pyplot as plt
 from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, NORMAL
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
-
-signal_map = {
-    "S1": "Szum o rozkładzie jednostajnym",
-    "S2": "Szum Gaussowski",
-    "S3": "Sygnał sinusoidalny",
-    "S4": "Sygnał sinusoidalny wyprostowany jednopołówkowo",
-    "S5": "Sygnał sinusoidalny wyprostowany dwupołówkowo",
-    "S6": "Sygnał prostokątny",
-    "S7": "Sygnał prostokątny symetryczny",
-    "S8": "Sygnał trójkątny",
-    "S9": "Skok jednostkowy",
-    "S10": "Impuls jednostkowy",
-    "S11": "Szum impulsowy"
-}
-
-param_entries = {}
-
-# Definicja skrótów dla parametrów
-param_abbreviations = {
-    "Amplituda (A)": "A",
-    "Czas początkowy (t1)": "t1",
-    "Czas trwania sygnału (d)": "d",
-    "Okres podstawowy (T)": "T",
-    "Współczynnik wypełnienia (kw)": "kw",
-    "ts": "ts",
-    "Numer próbki dla której następuje skos (ns)": "ns",
-    "numer pierwszej próbki (n1)": "n1",
-    "l": "l",
-    "Częstotliwość próbkowania (f)": "f",
-    "Prawdopodobieństwo wystąpienia A (p)": "p"
-}
-
-# Zaktualizowane pełne parametry
-signal_params = [
-    "Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):",
-    "Okres podstawowy (T):", "Współczynnik wypełnienia (kw):", "ts",
-    "Numer próbki dla której następuje skos (ns):", "numer pierwszej próbki (n1):", "l",
-    "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"
-]
-
-# Zaktualizowane mapowanie parametrów dla sygnałów
-signal_params_map = {
-    "S1": ["A", "t1", "d"],
-    "S2": ["A", "t1", "d"],
-    "S3": ["A", "T", "t1", "d"],
-    "S4": ["A", "T", "t1", "d"],
-    "S5": ["A", "T", "t1", "d"],
-    "S6": ["A", "T", "t1", "d", "kw"],
-    "S7": ["A", "T", "t1", "d", "kw"],
-    "S8": ["A", "T", "t1", "d", "kw"],
-    "S9": ["A", "t1", "d", "ts"],
-    "S10": ["A", "ns", "n1", "l", "f"],
-    "S11": ["A", "t1", "d", "f", "p"]
-}
+from Dictionary import signal_map, param_entries, param_abbreviations, signal_params, signal_params_map
 
 # Zaktualizowana funkcja do wyświetlania pełnych nazw parametrów
 def get_full_param_name(abbreviation):
     return next((name for name, abbr in param_abbreviations.items() if abbr == abbreviation), abbreviation)
-
 
 def update_param_fields(*args):
     # Usuwamy stare pola
