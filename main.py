@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
 from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
@@ -18,6 +17,7 @@ signal_map = {
     "S10": "Impuls jednostkowy",
     "S11": "Szum impulsowy"
 }
+
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
@@ -50,6 +50,7 @@ def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_
 
     return t, signal
 
+
 def plot_signal(ax, time, signal, title="Wykres sygnału"):
     ax.clear()
     ax.plot(time, signal, label="Sygnał")
@@ -67,6 +68,7 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.set_ylabel("Liczność")
     ax.set_title(title)
     ax.grid()
+
 
 def calculate_signal_parameters(t, signal, frequency):
     mean_value = np.mean(signal)
@@ -89,6 +91,7 @@ def calculate_signal_parameters(t, signal, frequency):
         mean_power = np.mean(signal_filtered**2)
 
     return mean_value, mean_abs_value, rms_value, variance, mean_power
+
 
 def update_plot():
     full_signal_name = signal_var.get()
@@ -116,6 +119,7 @@ def update_plot():
     plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     canvas.draw()
 
+
 def on_save():
     full_signal_name = signal_var.get()
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name]
@@ -125,22 +129,23 @@ def on_save():
         return
 
     signal_type = signal_type[0]
-    time, signal = generate_signal(signal_type, float(freq_var.get()), float(amplitude_var.get()),
-                                   float(duration_var.get()), int(sampling_var.get()))
-    fo.save_signal(time, signal)
+    time, signal = generate_signal(signal_type, int(freq_var.get()), int(amplitude_var.get()),
+                                   int(duration_var.get()), int(sampling_var.get()))
+    fo.save_signal(time, signal, float(freq_var.get()), float(amplitude_var.get()), float(duration_var.get()), int(sampling_var.get()))
+
 
 def on_load():
-    time, signal = fo.load_signal()
+    time, signal, frequency, amplitude, duration, sampling_rate = fo.load_signal()
     if time is not None and signal is not None:
-        frequency = 1 / (time[1] - time[0])
-        amplitude = np.max(signal) - np.min(signal)
-        duration = time[-1]
-        sampling_rate = len(time) / duration
+        #frequency = 1 / (time[1] - time[0])
+        #amplitude = np.max(signal) - np.min(signal)
+        #duration = time[-1]
+        #sampling_rate = len(time) / duration
 
-        freq_var.set(f"{frequency:.2f}")
-        amplitude_var.set(f"{amplitude:.2f}")
-        duration_var.set(f"{duration:.2f}")
-        sampling_var.set(f"{sampling_rate:.2f}")
+        freq_var.set(f"{frequency:.0f}")
+        amplitude_var.set(f"{amplitude:.0f}")
+        duration_var.set(f"{duration:.0f}")
+        sampling_var.set(f"{sampling_rate:.0f}")
         bins_var.set("10")
 
         mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal,
@@ -161,36 +166,39 @@ def on_load():
 
 # Funkcje do operacji na sygnałach
 def on_add():
-    time1, signal1 = fo.load_signal()
-    time2, signal2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.add_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+
 
 def on_subtract():
-    time1, signal1 = fo.load_signal()
-    time2, signal2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.subtract_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+
 
 def on_multiply():
-    time1, signal1 = fo.load_signal()
-    time2, signal2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.multiply_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+
 
 def on_divide():
-    time1, signal1 = fo.load_signal()
-    time2, signal2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.divide_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
 
 
 # Tworzenie GUI
