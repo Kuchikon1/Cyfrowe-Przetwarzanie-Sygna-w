@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, NORMAL
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
+import Signal_operations as so
 from Dictionary import signal_map, param_entries, param_abbreviations, signal_params, signal_params_map
 
 # Zaktualizowana funkcja do wyświetlania pełnych nazw parametrów
@@ -175,44 +176,6 @@ def on_load():
         plot_histogram(ax2, signal, "Histogram wczytanego sygnału", 10)
         canvas.draw()
 
-
-# Funkcje do operacji na sygnałach
-def on_add():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
-    if time1 is not None and time2 is not None:
-        time, result_signal = fo.add_signals(time1, signal1, time2, signal2)
-        if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
-
-
-def on_subtract():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
-    if time1 is not None and time2 is not None:
-        time, result_signal = fo.subtract_signals(time1, signal1, time2, signal2)
-        if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
-
-
-def on_multiply():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
-    if time1 is not None and time2 is not None:
-        time, result_signal = fo.multiply_signals(time1, signal1, time2, signal2)
-        if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
-
-
-def on_divide():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
-    if time1 is not None and time2 is not None:
-        time, result_signal = fo.divide_signals(time1, signal1, time2, signal2)
-        if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
-
-
 # Tworzenie GUI
 root = Tk()
 root.title("Generator Sygnałów")
@@ -263,10 +226,10 @@ bins_var = StringVar(value="0")
 Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
 Button(frame_buttons, text="Wczytaj sygnał", command=on_load).pack(side="left", padx=5)
 
-Button(frame_buttons, text="Dodaj sygnały", command=on_add).pack(side="left", padx=(76,5))
-Button(frame_buttons, text="Odejmij sygnały", command=on_subtract).pack(side="left", padx=5)
-Button(frame_buttons, text="Pomnóż sygnały", command=on_multiply).pack(side="left", padx=5)
-Button(frame_buttons, text="Podziel sygnały", command=on_divide).pack(side="left", padx=5)
+Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left", padx=(76,5))
+Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=5)
+Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
+Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
