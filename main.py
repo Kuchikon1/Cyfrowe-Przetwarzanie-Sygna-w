@@ -18,6 +18,8 @@ signal_map = {
     "S11": "Szum impulsowy"
 }
 
+param_entries = {}
+
 signal_params = [
     "Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):",
     "Okres podstawowy (T):", "Współczynnik wypełnienia (kw):", "ts",
@@ -39,8 +41,12 @@ signal_params_map = {
     "S11": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"]
 }
 
-
 def update_param_fields(*args):
+    # Usuwamy stare pola
+    for widget in param_frame.winfo_children():
+        widget.destroy()
+
+    # Pobieramy wybrany typ sygnału
     signal_type = [key for key, value in signal_map.items() if value == signal_var.get()]
     if not signal_type:
         return
@@ -48,11 +54,20 @@ def update_param_fields(*args):
     signal_type = signal_type[0]
     active_params = signal_params_map.get(signal_type, [])
 
-    for param, entry in param_entries.items():
-        if param in active_params:
-            entry.config(state=NORMAL)
-        else:
-            entry.config(state=DISABLED)
+    # Ustalmy stałą szerokość dla pól
+    label_width = 32
+    entry_width = 32
+
+    # Tworzymy nowe pola tylko dla aktywnych parametrów
+    for param in active_params:
+        frame = Frame(param_frame)
+        frame.pack(anchor="w")  # Ustawiamy wyrównanie na lewą stronę
+        # Wyrównujemy label do lewej z ustaloną szerokością
+        Label(frame, text=param, anchor="w", width=label_width).pack(fill="x")
+        entry = Entry(frame, width=entry_width, justify="left")  # Wyrównujemy tekst w Entry
+        entry.pack(fill="x")  # Wyrównujemy entry do lewej
+        entry.config(state=NORMAL)
+        param_entries[param] = entry
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
@@ -245,28 +260,30 @@ signal_var = StringVar(value="")
 signal_var.trace("w", update_param_fields)
 
 frame_controls = Frame(root)
-frame_controls.pack(padx=13, pady=10)
+frame_controls.pack(side="top", padx=13, pady=10)
 
-Label(frame_controls, text="Wybierz sygnał:").pack()
-signal_var = StringVar()
+signal_var = StringVar(value="")
 signal_var.trace("w", update_param_fields)
+Label(frame_controls, text="Wybierz sygnał:").pack()
 signal_combo = ttk.Combobox(frame_controls, textvariable=signal_var, values=list(signal_map.values()), width=35)
 signal_combo.pack()
 
 param_frame = Frame(root)
 param_frame.pack(padx=0, pady=0)
 
-param_entries = {}
-for param_list in signal_params_map.values():
-    for param in param_list:
-        if param not in param_entries:
-            frame = Frame(param_frame)
-            frame.pack(anchor="w", padx=0, pady=2)
-            Label(frame, text=param).pack(anchor="w", padx=15)
-            entry = Entry(frame)
-            entry.pack(anchor="w", padx=15)
-            entry.config(state=DISABLED)
-            param_entries[param] = entry
+frame_bottom = Frame(root)
+frame_bottom.pack(side="bottom", fill="x", padx=10, pady=10)
+
+# Przycisk Generuj
+Button(frame_bottom, text="Generuj", command=update_plot, font=("Arial", 12)).pack(side="top", padx=5, pady=10)
+
+# Frame na wartości (średnia, RMS itd.)
+params_label = Label(frame_bottom, text="Wartość średnia: 0.0000\n"
+                                           "Wartość średnia bezwzględna: 0.0000\n"
+                                           "Wartość skuteczna (RMS): 0.0000\n"
+                                           "Wariancja: 0.0000\n"
+                                           "Moc średnia: 0.0000", font=("Arial", 10))
+params_label.pack(side="top", padx=10)
 
 # Parametry sygnału
 freq_var = StringVar(value="0")
@@ -275,13 +292,11 @@ duration_var = StringVar(value="0")
 sampling_var = StringVar(value="0")
 bins_var = StringVar(value="0")
 
-Button(param_frame, text="Generuj", command=update_plot).pack()
-
 # Przyciski Górne
 Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
 Button(frame_buttons, text="Wczytaj sygnał", command=on_load).pack(side="left", padx=5)
 
-Button(frame_buttons, text="Dodaj sygnały", command=on_add).pack(side="left", padx=5)
+Button(frame_buttons, text="Dodaj sygnały", command=on_add).pack(side="left", padx=(76,5))
 Button(frame_buttons, text="Odejmij sygnały", command=on_subtract).pack(side="left", padx=5)
 Button(frame_buttons, text="Pomnóż sygnały", command=on_multiply).pack(side="left", padx=5)
 Button(frame_buttons, text="Podziel sygnały", command=on_divide).pack(side="left", padx=5)
@@ -291,12 +306,5 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
 plt.subplots_adjust(hspace=0.4)
 canvas = FigureCanvasTkAgg(fig, master=frame_plot)
 canvas.get_tk_widget().pack()
-
-params_label = Label(param_frame, text="Wartość średnia: 0.0000\n"
-                                              "Wartość średnia bezwzględna: 0.0000\n"
-                                              "Wartość skuteczna (RMS): 0.0000\n"
-                                              "Wariancja: 0.0000\n"
-                                              "Moc średnia: 0.0000")
-params_label.pack(padx=10, pady=10)
 
 root.mainloop()
