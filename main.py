@@ -66,11 +66,10 @@ def generate_signal(signal_type):
         t, signal, d, t1 = sf.sygnal_trojkatny(par['A'], par['T'], par['t1'], par['d'], par['kw'])
     elif signal_type == "S9":
         t, signal, d, t1 = sf.skok_jednostkowy(par['A'], par['t1'], par['d'], par['ts'])
-    # elif signal_type == "S10":
-    #     signal = np.zeros_like(t)
-    #     signal[len(t) // 2] = amplitude
-    # elif signal_type == "S11":
-    #     signal = np.random.choice([0, amplitude], size=len(t), p=[0.9, 0.1])
+    elif signal_type == "S10":
+        t, signal = sf.impuls_jednostkowy(par['A'], par['ns'], par['n1'], par['l'], par['f'])
+    elif signal_type == "S11":
+        t, signal = sf.szum_impulsowy(par['A'], par['t1'], par['d'], par['f'], par['p'])
     else:
         raise ValueError("Nieznany typ sygnału")
 
