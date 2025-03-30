@@ -1,13 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, NORMAL
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
-from Dictionary import signal_map, param_entries, param_abbreviations, signal_params, signal_params_map
-
-bins = 10
+from Dictionary import signal_map, param_entries, param_abbreviations, signal_params_map
 
 # Zaktualizowana funkcja do wyświetlania pełnych nazw parametrów
 def get_full_param_name(abbreviation):
@@ -87,20 +85,24 @@ def plot_signal(ax, time, signal, title="Wykres sygnału"):
 
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
-    # Upewnijmy się, że bins jest liczbą całkowitą większą od 0
-    try:
-        bins = int(bins)
-        if bins <= 0:
-            bins = 10  # Ustawienie domyślnej wartości 10, jeśli bins jest nieprawidłowe
-    except ValueError:
-        bins = 10  # Ustawienie domyślnej wartości 10, jeśli bins nie jest liczbą całkowitą
-
     ax.clear()
-    ax.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black')
+    min_signal, max_signal = np.min(signal), np.max(signal)
+    bin_width = (max_signal - min_signal) / bins
+    bins_edge = np.linspace(min_signal, max_signal, bins + 1)
+
+    n, bins_edge, patches = ax.hist(signal, bins=bins_edge, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2, align='mid')
+
+    bin_centers = (bins_edge[:-1] + bins_edge[1:]) / 2
+    ax.set_xticks(np.arange(np.floor(min_signal), np.ceil(max_signal), bin_width))
+    ax.set_xticklabels([f'{x:.0f}' for x in np.arange(np.floor(min_signal), np.ceil(max_signal), bin_width)])
+
+    for i in range(len(n)):
+        bin_center = bin_centers[i]
+        ax.text(bin_center, n[i] + 0.5, f'{n[i]:.0f}', ha='center', va='bottom', fontsize=10)
+
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
     ax.set_title(title)
-    ax.grid()
 
 
 def calculate_signal_parameters(t, signal):
@@ -207,6 +209,11 @@ param_frame.pack(padx=0, pady=0)
 frame_bottom = Frame(root)
 frame_bottom.pack(side="bottom", fill="x", padx=10, pady=10)
 
+Label(frame_bottom, text="Liczba binów:").pack(side="top", padx=10)
+bins_var = StringVar(value="10")
+bins_entry = Entry(frame_bottom, textvariable=bins_var, width=35)
+bins_entry.pack(side="top", padx=10, pady=5)
+
 # Przycisk Generuj
 Button(frame_bottom, text="Generuj", command=update_plot, font=("Arial", 12)).pack(side="top", padx=5, pady=10)
 
@@ -217,13 +224,6 @@ params_label = Label(frame_bottom, text="Wartość średnia: 0.0000\n"
                                            "Wariancja: 0.0000\n"
                                            "Moc średnia: 0.0000", font=("Arial", 10))
 params_label.pack(side="top", padx=10)
-
-# Parametry sygnału
-freq_var = StringVar(value="0")
-amplitude_var = StringVar(value="0")
-duration_var = StringVar(value="0")
-sampling_var = StringVar(value="0")
-bins_var = StringVar(value="0")
 
 # Przyciski Górne
 Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)

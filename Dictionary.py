@@ -31,14 +31,6 @@ param_abbreviations = {
     "Prawdopodobieństwo wystąpienia A (p)": "p"
 }
 
-# Parametry sygnałów
-signal_params = [
-    "Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):",
-    "Okres podstawowy (T):", "Współczynnik wypełnienia (kw):", "ts",
-    "Numer próbki dla której następuje skos (ns):", "numer pierwszej próbki (n1):", "l",
-    "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"
-]
-
 # Mapowanie parametrów dla sygnałów
 signal_params_map = {
     "S1": ["A", "t1", "d"],
