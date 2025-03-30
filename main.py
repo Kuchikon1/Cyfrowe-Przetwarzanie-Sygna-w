@@ -103,7 +103,6 @@ def update_plot():
     time, signal = generate_signal(signal_type, frequency, amplitude, duration, sampling_rate)
     mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, frequency)
 
-    # Wyświetlanie wyników obliczeń w GUI
     params_text = (
         f"Wartość średnia: {mean_value:.4f}\n"
         f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
@@ -111,9 +110,6 @@ def update_plot():
         f"Wariancja: {variance:.4f}\n"
         f"Moc średnia: {mean_power:.4f}"
     )
-
-    params_label = Label(frame_controls, text="Parametry sygnału", justify="left")
-    params_label.pack(pady=10)
     params_label.config(text=params_text)
 
     plot_signal(ax1, time, signal, f"Sygnał {signal_type}")
@@ -136,6 +132,9 @@ def on_load():
 # Tworzenie GUI
 root = Tk()
 root.title("Generator Sygnałów")
+
+frame_buttons = Frame(root)
+frame_buttons.pack(side="top", anchor="w", padx=10, pady=10)
 
 frame_controls = Frame(root)
 frame_controls.pack(side="left", padx=10, pady=10)
@@ -175,12 +174,19 @@ Entry(frame_controls, textvariable=bins_var).pack()
 Button(frame_controls, text="Generuj", command=update_plot).pack()
 
 # Dodanie przycisków "Zapisz" i "Wczytaj"
-Button(frame_controls, text="Zapisz sygnał", command=on_save).pack(pady=5)
-Button(frame_controls, text="Wczytaj sygnał", command=on_load).pack(pady=5)
+Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
+Button(frame_buttons, text="Wczytaj sygnał", command=on_load).pack(side="left", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
 canvas = FigureCanvasTkAgg(fig, master=frame_plot)
 canvas.get_tk_widget().pack()
+
+params_label = Label(frame_controls, text="Wartość średnia: 0.0000\n"
+                                              "Wartość średnia bezwzględna: 0.0000\n"
+                                              "Wartość skuteczna (RMS): 0.0000\n"
+                                              "Wariancja: 0.0000\n"
+                                              "Moc średnia: 0.0000")
+params_label.pack(padx=10, pady=10)
 
 root.mainloop()
