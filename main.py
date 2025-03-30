@@ -117,7 +117,15 @@ def update_plot():
     canvas.draw()
 
 def on_save():
-    time, signal = generate_signal(signal_var.get(), float(freq_var.get()), float(amplitude_var.get()),
+    full_signal_name = signal_var.get()
+    signal_type = [key for key, value in signal_map.items() if value == full_signal_name]
+
+    if not signal_type:
+        print(f"Błąd: Nieznany sygnał '{full_signal_name}'")
+        return
+
+    signal_type = signal_type[0]
+    time, signal = generate_signal(signal_type, float(freq_var.get()), float(amplitude_var.get()),
                                    float(duration_var.get()), int(sampling_var.get()))
     fo.save_signal(time, signal)
 
