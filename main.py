@@ -43,29 +43,29 @@ def update_param_fields(*args):
 def generate_signal(signal_type):
     params = {full_name: float(param_entries[full_name].get()) for full_name in param_entries}
 
-    parameters = {}
+    par = {}
     for full_param, value in params.items():
         abbreviation = param_abbreviations.get(full_param, full_param)
-        parameters[abbreviation] = value
+        par[abbreviation] = value
 
     if signal_type == "S1":
-        t, signal, d, t1 = sf.szum_o_rozkładzie_jednostajnym(parameters['A'], parameters['t1'], parameters['d'])
+        t, signal, d, t1 = sf.szum_o_rozkładzie_jednostajnym(par['A'], par['t1'], par['d'])
     elif signal_type == "S2":
-        t, signal, d, t1 = sf.szum_gaussowski(parameters['A'], parameters['t1'], parameters['d'])
-    # elif signal_type == "S3":
-    #     signal = amplitude * np.sin(2 * np.pi * frequency * t)
-    # elif signal_type == "S4":
-    #     signal = np.maximum(0, amplitude * np.sin(2 * np.pi * frequency * t))
-    # elif signal_type == "S5":
-    #     signal = np.abs(amplitude * np.sin(2 * np.pi * frequency * t))
-    # elif signal_type == "S6":
-    #     signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
-    # elif signal_type == "S7":
-    #     signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
-    # elif signal_type == "S8":
-    #     signal = 2 * amplitude * np.abs(t % (1 / frequency) - (1 / (2 * frequency))) - amplitude
-    # elif signal_type == "S9":
-    #     signal = np.where(t >= duration / 2, amplitude, 0)
+        t, signal, d, t1 = sf.szum_gaussowski(par['A'], par['t1'], par['d'])
+    elif signal_type == "S3":
+        t, signal, d, t1 = sf.sygnal_sinusoidalny(par['A'], par['T'], par['t1'], par['d'])
+    elif signal_type == "S4":
+        t, signal, d, t1 = sf.sygnal_sinusoidalny_wyprosotowany_jednopolowkowo(par['A'], par['T'], par['t1'], par['d'])
+    elif signal_type == "S5":
+        t, signal, d, t1 = sf.sygnal_sinusoidalny_wyprosotowany_dwupolowkowo(par['A'], par['T'], par['t1'], par['d'])
+    elif signal_type == "S6":
+        t, signal, d, t1 = sf.sygnal_prostokatny(par['A'], par['T'], par['t1'], par['d'], par['kw'])
+    elif signal_type == "S7":
+        t, signal, d, t1 = sf.sygnal_prostokatny_symetryczny(par['A'], par['T'], par['t1'], par['d'], par['kw'])
+    elif signal_type == "S8":
+        t, signal, d, t1 = sf.sygnal_trojkatny(par['A'], par['T'], par['t1'], par['d'], par['kw'])
+    elif signal_type == "S9":
+        t, signal, d, t1 = sf.skok_jednostkowy(par['A'], par['t1'], par['d'], par['ts'])
     # elif signal_type == "S10":
     #     signal = np.zeros_like(t)
     #     signal[len(t) // 2] = amplitude
