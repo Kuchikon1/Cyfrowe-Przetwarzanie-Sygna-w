@@ -248,6 +248,7 @@ Button(frame_buttons, text="Podziel sygnały", command=on_divide).pack(side="lef
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
+plt.subplots_adjust(hspace=0.4)
 canvas = FigureCanvasTkAgg(fig, master=frame_plot)
 canvas.get_tk_widget().pack()
 
