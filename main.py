@@ -1,5 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+import tkinter as tk
+from tkinter import ttk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
@@ -32,33 +37,84 @@ def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_
 
     return t, signal
 
-def plot_signal(time, signal, title="Wykres sygnału"):
-    plt.plot(time, signal)
-    plt.xlabel("Czas [s]")
-    plt.ylabel("Amplituda")
-    plt.title(title)
-    plt.grid()
-    plt.show()
 
-def plot_histogram(signal, title="Histogram sygnału", bins=10):
-    plt.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black')
-    plt.xlabel("Amplituda")
-    plt.ylabel("Liczność")
-    plt.title(title)
-    plt.grid()
-    plt.show()
+def plot_signal(ax, time, signal, title="Wykres sygnału"):
+    ax.clear()
+    ax.plot(time, signal, label="Sygnał")
+    ax.set_xlabel("Czas [s]")
+    ax.set_ylabel("Amplituda")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid()
 
-# Wybór sygnału i parametrów
-signal_type = input("Wybierz sygnał (S1, S2, S3, ..., S11): ")
-frequency = float(input("Podaj częstotliwość (Hz): "))
-amplitude = float(input("Podaj amplitudę: "))
-duration = float(input("Podaj czas trwania (s): "))
-sampling_rate = int(input("Podaj częstotliwość próbkowania (Hz): "))
-bins = int(input("Podaj liczbę przedziałów histogramu: "))
 
-# Generowanie sygnału
-time, signal = generate_signal(signal_type, frequency, amplitude, duration, sampling_rate)
+def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
+    ax.clear()
+    ax.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black')
+    ax.set_xlabel("Amplituda")
+    ax.set_ylabel("Liczność")
+    ax.set_title(title)
+    ax.grid()
 
-# Wyświetlanie wykresu sygnału i histogramu
-plot_signal(time, signal, f"Sygnał {signal_type}")
-plot_histogram(signal, f"Histogram {signal_type}", bins)
+
+def update_plot():
+    signal_type = signal_var.get()
+    frequency = float(freq_var.get())
+    amplitude = float(amplitude_var.get())
+    duration = float(duration_var.get())
+    sampling_rate = int(sampling_var.get())
+    bins = int(bins_var.get())
+
+    time, signal = generate_signal(signal_type, frequency, amplitude, duration, sampling_rate)
+    plot_signal(ax1, time, signal, f"Sygnał {signal_type}")
+    plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
+    canvas.draw()
+
+
+# Tworzenie GUI
+root = tk.Tk()
+root.title("Generator Sygnałów")
+
+frame_controls = tk.Frame(root)
+frame_controls.pack(side=tk.LEFT, padx=10, pady=10)
+
+frame_plot = tk.Frame(root)
+frame_plot.pack(side=tk.RIGHT, padx=10, pady=10)
+
+# Wybór sygnału
+signal_var = tk.StringVar(value="")
+tk.Label(frame_controls, text="Wybierz sygnał").pack()
+signals = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"]
+signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signals)
+signal_menu.pack()
+
+# Parametry sygnału
+freq_var = tk.StringVar(value="0")
+amplitude_var = tk.StringVar(value="0")
+duration_var = tk.StringVar(value="0")
+sampling_var = tk.StringVar(value="0")
+bins_var = tk.StringVar(value="0")
+
+tk.Label(frame_controls, text="Częstotliwość (Hz)").pack()
+tk.Entry(frame_controls, textvariable=freq_var).pack()
+
+tk.Label(frame_controls, text="Amplituda").pack()
+tk.Entry(frame_controls, textvariable=amplitude_var).pack()
+
+tk.Label(frame_controls, text="Czas trwania (s)").pack()
+tk.Entry(frame_controls, textvariable=duration_var).pack()
+
+tk.Label(frame_controls, text="Próbkowanie (Hz)").pack()
+tk.Entry(frame_controls, textvariable=sampling_var).pack()
+
+tk.Label(frame_controls, text="Liczba przedziałów histogramu").pack()
+tk.Entry(frame_controls, textvariable=bins_var).pack()
+
+tk.Button(frame_controls, text="Generuj", command=update_plot).pack()
+
+# Wykresy
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
+canvas = FigureCanvasTkAgg(fig, master=frame_plot)
+canvas.get_tk_widget().pack()
+
+root.mainloop()
