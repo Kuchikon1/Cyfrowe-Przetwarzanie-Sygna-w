@@ -4,7 +4,10 @@ from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, NORMAL
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
+import Signal_functions as sf
 from Dictionary import signal_map, param_entries, param_abbreviations, signal_params, signal_params_map
+
+bins = 10
 
 # Zaktualizowana funkcja do wyświetlania pełnych nazw parametrów
 def get_full_param_name(abbreviation):
@@ -37,32 +40,37 @@ def update_param_fields(*args):
         entry.pack(fill="x")
         param_entries[full_param_name] = entry
 
-def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
-    t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
+def generate_signal(signal_type):
+    params = {full_name: float(param_entries[full_name].get()) for full_name in param_entries}
+
+    parameters = {}
+    for full_param, value in params.items():
+        abbreviation = param_abbreviations.get(full_param, full_param)
+        parameters[abbreviation] = value
 
     if signal_type == "S1":
-        signal = np.random.uniform(-amplitude, amplitude, len(t))
+        t, signal, d, t1 = sf.szum_o_rozkładzie_jednostajnym(parameters['A'], parameters['t1'], parameters['d'])
     elif signal_type == "S2":
-        signal = np.random.normal(0, amplitude, len(t))
-    elif signal_type == "S3":
-        signal = amplitude * np.sin(2 * np.pi * frequency * t)
-    elif signal_type == "S4":
-        signal = np.maximum(0, amplitude * np.sin(2 * np.pi * frequency * t))
-    elif signal_type == "S5":
-        signal = np.abs(amplitude * np.sin(2 * np.pi * frequency * t))
-    elif signal_type == "S6":
-        signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
-    elif signal_type == "S7":
-        signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
-    elif signal_type == "S8":
-        signal = 2 * amplitude * np.abs(t % (1 / frequency) - (1 / (2 * frequency))) - amplitude
-    elif signal_type == "S9":
-        signal = np.where(t >= duration / 2, amplitude, 0)
-    elif signal_type == "S10":
-        signal = np.zeros_like(t)
-        signal[len(t) // 2] = amplitude
-    elif signal_type == "S11":
-        signal = np.random.choice([0, amplitude], size=len(t), p=[0.9, 0.1])
+        t, signal, d, t1 = sf.szum_gaussowski(parameters['A'], parameters['t1'], parameters['d'])
+    # elif signal_type == "S3":
+    #     signal = amplitude * np.sin(2 * np.pi * frequency * t)
+    # elif signal_type == "S4":
+    #     signal = np.maximum(0, amplitude * np.sin(2 * np.pi * frequency * t))
+    # elif signal_type == "S5":
+    #     signal = np.abs(amplitude * np.sin(2 * np.pi * frequency * t))
+    # elif signal_type == "S6":
+    #     signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
+    # elif signal_type == "S7":
+    #     signal = amplitude * np.sign(np.sin(2 * np.pi * frequency * t))
+    # elif signal_type == "S8":
+    #     signal = 2 * amplitude * np.abs(t % (1 / frequency) - (1 / (2 * frequency))) - amplitude
+    # elif signal_type == "S9":
+    #     signal = np.where(t >= duration / 2, amplitude, 0)
+    # elif signal_type == "S10":
+    #     signal = np.zeros_like(t)
+    #     signal[len(t) // 2] = amplitude
+    # elif signal_type == "S11":
+    #     signal = np.random.choice([0, amplitude], size=len(t), p=[0.9, 0.1])
     else:
         raise ValueError("Nieznany typ sygnału")
 
@@ -80,6 +88,14 @@ def plot_signal(ax, time, signal, title="Wykres sygnału"):
 
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
+    # Upewnijmy się, że bins jest liczbą całkowitą większą od 0
+    try:
+        bins = int(bins)
+        if bins <= 0:
+            bins = 10  # Ustawienie domyślnej wartości 10, jeśli bins jest nieprawidłowe
+    except ValueError:
+        bins = 10  # Ustawienie domyślnej wartości 10, jeśli bins nie jest liczbą całkowitą
+
     ax.clear()
     ax.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black')
     ax.set_xlabel("Amplituda")
@@ -88,17 +104,16 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.grid()
 
 
-def calculate_signal_parameters(t, signal, frequency):
+def calculate_signal_parameters(t, signal):
     mean_value = np.mean(signal)
     mean_abs_value = np.mean(np.abs(signal))
     rms_value = np.sqrt(np.mean(signal**2))
     variance = np.var(signal)
     mean_power = np.mean(signal**2)
-    period = 1 / frequency
-    full_periods_count = int(np.floor(t[-1] / period))
+    full_periods_count = int(np.floor(t[-1]))
 
     if full_periods_count > 0:
-        start_index = int((t[-1] - full_periods_count * period) * len(t) / t[-1])
+        start_index = int((t[-1] - full_periods_count) * len(t) / t[-1])
         t_filtered = t[start_index:]
         signal_filtered = signal[start_index:]
 
@@ -121,8 +136,8 @@ def update_plot():
     sampling_rate = int(sampling_var.get())
     bins = int(bins_var.get())
 
-    time, signal = generate_signal(signal_type, frequency, amplitude, duration, sampling_rate)
-    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, frequency)
+    time, signal = generate_signal(signal_type)
+    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal)
 
     params_text = (
         f"Wartość średnia: {mean_value:.4f}\n"
@@ -147,8 +162,7 @@ def on_save():
         return
 
     signal_type = signal_type[0]
-    time, signal = generate_signal(signal_type, int(freq_var.get()), int(amplitude_var.get()),
-                                   int(duration_var.get()), int(sampling_var.get()))
+    time, signal = generate_signal(signal_type)
     fo.save_signal(time, signal, float(freq_var.get()), float(amplitude_var.get()), float(duration_var.get()), int(sampling_var.get()))
 
 
@@ -161,16 +175,15 @@ def on_load():
         sampling_var.set(f"{sampling_rate:.0f}")
         bins_var.set("10")
 
-        mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal,
-                                                                                                  frequency)
-        params_text = (
-            f"Wartość średnia: {mean_value:.4f}\n"
-            f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
-            f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
-            f"Wariancja: {variance:.4f}\n"
-            f"Moc średnia: {mean_power:.4f}"
-        )
-        params_label.config(text=params_text)
+        # mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal)
+        # params_text = (
+        #     f"Wartość średnia: {mean_value:.4f}\n"
+        #     f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
+        #     f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
+        #     f"Wariancja: {variance:.4f}\n"
+        #     f"Moc średnia: {mean_power:.4f}"
+        # )
+        # params_label.config(text=params_text)
 
         plot_signal(ax1, time, signal, "Wczytany sygnał")
         plot_histogram(ax2, signal, "Histogram wczytanego sygnału", 10)
