@@ -135,13 +135,8 @@ def on_save():
 
 
 def on_load():
-    time, signal, frequency, amplitude, duration, sampling_rate = fo.load_signal()
+    time, signal, frequency, amplitude, duration, sampling_rate, signal_type = fo.load_signal()
     if time is not None and signal is not None:
-        #frequency = 1 / (time[1] - time[0])
-        #amplitude = np.max(signal) - np.min(signal)
-        #duration = time[-1]
-        #sampling_rate = len(time) / duration
-
         freq_var.set(f"{frequency:.0f}")
         amplitude_var.set(f"{amplitude:.0f}")
         duration_var.set(f"{duration:.0f}")
@@ -166,39 +161,39 @@ def on_load():
 
 # Funkcje do operacji na sygnałach
 def on_add():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.add_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
 
 
 def on_subtract():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.subtract_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
 
 
 def on_multiply():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.multiply_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
 
 
 def on_divide():
-    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1 = fo.load_signal()
-    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2 = fo.load_signal()
+    time1, signal1, frequency1, amplitude1, duration1, sampling_rate1, signal_type1 = fo.load_signal()
+    time2, signal2, frequency2, amplitude2, duration2, sampling_rate2, signal_type2 = fo.load_signal()
     if time1 is not None and time2 is not None:
         time, result_signal = fo.divide_signals(time1, signal1, time2, signal2)
         if time is not None:
-            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1)
+            fo.save_signal(time, result_signal, frequency1, amplitude1, duration1, sampling_rate1, None)
 
 
 # Tworzenie GUI
