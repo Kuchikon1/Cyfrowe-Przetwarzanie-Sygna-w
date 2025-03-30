@@ -9,8 +9,8 @@ signal_map = {
     "S1": "Szum o rozkładzie jednostajnym",
     "S2": "Szum Gaussowski",
     "S3": "Sygnał sinusoidalny",
-    "S4": "Sygnał sinusoidalny wyprostowany jednopołówkowo",
-    "S5": "Sygnał sinusoidalny wyprostowany dwupołówkowo",
+    "S4": "Sygnał sin. wyprostowany jednopołówkowo",
+    "S5": "Sygnał sin. wyprostowany dwupołówkowo",
     "S6": "Sygnał prostokątny",
     "S7": "Sygnał prostokątny symetryczny",
     "S8": "Sygnał trójkątny",
@@ -213,7 +213,7 @@ frame_plot.pack(side="right", padx=10, pady=10)
 signal_var = StringVar(value="")
 Label(frame_controls, text="Wybierz sygnał").pack()
 signal_names = list(signal_map.values())
-signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signal_names)
+signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signal_names, width=40)
 signal_menu.pack()
 
 # Parametry sygnału
@@ -224,21 +224,21 @@ sampling_var = StringVar(value="0")
 bins_var = StringVar(value="0")
 
 Label(frame_controls, text="Częstotliwość (Hz)").pack()
-Entry(frame_controls, textvariable=freq_var).pack()
+Entry(frame_controls, textvariable=freq_var, width=40).pack()
 
 Label(frame_controls, text="Amplituda").pack()
-Entry(frame_controls, textvariable=amplitude_var).pack()
+Entry(frame_controls, textvariable=amplitude_var, width=40).pack()
 
 Label(frame_controls, text="Czas trwania (s)").pack()
-Entry(frame_controls, textvariable=duration_var).pack()
+Entry(frame_controls, textvariable=duration_var, width=40).pack()
 
 Label(frame_controls, text="Próbkowanie (Hz)").pack()
-Entry(frame_controls, textvariable=sampling_var).pack()
+Entry(frame_controls, textvariable=sampling_var, width=40).pack()
 
 Label(frame_controls, text="Liczba przedziałów histogramu").pack()
-Entry(frame_controls, textvariable=bins_var).pack()
+Entry(frame_controls, textvariable=bins_var, width=40).pack()
 
-Button(frame_controls, text="Generuj", command=update_plot).pack()
+Button(frame_controls, text="Generuj", command=update_plot, font=("Arial", 10), width=15, height=2).pack(pady=10)
 
 # Dodanie przycisków "Zapisz" i "Wczytaj"
 Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
