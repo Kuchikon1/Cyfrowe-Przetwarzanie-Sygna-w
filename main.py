@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-import tkinter as tk
-from tkinter import ttk
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import File_operations as fo
 
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
@@ -70,47 +70,63 @@ def update_plot():
     plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     canvas.draw()
 
+def on_save():
+    time, signal = generate_signal(signal_var.get(), float(freq_var.get()), float(amplitude_var.get()),
+                                   float(duration_var.get()), int(sampling_var.get()))
+    fo.save_signal(time, signal)
+
+def on_load():
+    time, signal = fo.load_signal()
+    if time is not None and signal is not None:
+        plot_signal(ax1, time, signal, "Wczytany sygnał")
+        plot_histogram(ax2, signal, "Histogram wczytanego sygnału", 10)
+        canvas.draw()
+
 
 # Tworzenie GUI
-root = tk.Tk()
+root = Tk()
 root.title("Generator Sygnałów")
 
-frame_controls = tk.Frame(root)
-frame_controls.pack(side=tk.LEFT, padx=10, pady=10)
+frame_controls = Frame(root)
+frame_controls.pack(side="left", padx=10, pady=10)
 
-frame_plot = tk.Frame(root)
-frame_plot.pack(side=tk.RIGHT, padx=10, pady=10)
+frame_plot = Frame(root)
+frame_plot.pack(side="right", padx=10, pady=10)
 
 # Wybór sygnału
-signal_var = tk.StringVar(value="")
-tk.Label(frame_controls, text="Wybierz sygnał").pack()
+signal_var = StringVar(value="")
+Label(frame_controls, text="Wybierz sygnał").pack()
 signals = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"]
 signal_menu = ttk.Combobox(frame_controls, textvariable=signal_var, values=signals)
 signal_menu.pack()
 
 # Parametry sygnału
-freq_var = tk.StringVar(value="0")
-amplitude_var = tk.StringVar(value="0")
-duration_var = tk.StringVar(value="0")
-sampling_var = tk.StringVar(value="0")
-bins_var = tk.StringVar(value="0")
+freq_var = StringVar(value="0")
+amplitude_var = StringVar(value="0")
+duration_var = StringVar(value="0")
+sampling_var = StringVar(value="0")
+bins_var = StringVar(value="0")
 
-tk.Label(frame_controls, text="Częstotliwość (Hz)").pack()
-tk.Entry(frame_controls, textvariable=freq_var).pack()
+Label(frame_controls, text="Częstotliwość (Hz)").pack()
+Entry(frame_controls, textvariable=freq_var).pack()
 
-tk.Label(frame_controls, text="Amplituda").pack()
-tk.Entry(frame_controls, textvariable=amplitude_var).pack()
+Label(frame_controls, text="Amplituda").pack()
+Entry(frame_controls, textvariable=amplitude_var).pack()
 
-tk.Label(frame_controls, text="Czas trwania (s)").pack()
-tk.Entry(frame_controls, textvariable=duration_var).pack()
+Label(frame_controls, text="Czas trwania (s)").pack()
+Entry(frame_controls, textvariable=duration_var).pack()
 
-tk.Label(frame_controls, text="Próbkowanie (Hz)").pack()
-tk.Entry(frame_controls, textvariable=sampling_var).pack()
+Label(frame_controls, text="Próbkowanie (Hz)").pack()
+Entry(frame_controls, textvariable=sampling_var).pack()
 
-tk.Label(frame_controls, text="Liczba przedziałów histogramu").pack()
-tk.Entry(frame_controls, textvariable=bins_var).pack()
+Label(frame_controls, text="Liczba przedziałów histogramu").pack()
+Entry(frame_controls, textvariable=bins_var).pack()
 
-tk.Button(frame_controls, text="Generuj", command=update_plot).pack()
+Button(frame_controls, text="Generuj", command=update_plot).pack()
+
+# Dodanie przycisków "Zapisz" i "Wczytaj"
+Button(frame_controls, text="Zapisz sygnał", command=on_save).pack(pady=5)
+Button(frame_controls, text="Wczytaj sygnał", command=on_load).pack(pady=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
