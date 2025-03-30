@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, DISABLED, NORMAL
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, NORMAL
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 
@@ -20,6 +20,22 @@ signal_map = {
 
 param_entries = {}
 
+# Definicja skrótów dla parametrów
+param_abbreviations = {
+    "Amplituda (A)": "A",
+    "Czas początkowy (t1)": "t1",
+    "Czas trwania sygnału (d)": "d",
+    "Okres podstawowy (T)": "T",
+    "Współczynnik wypełnienia (kw)": "kw",
+    "ts": "ts",
+    "Numer próbki dla której następuje skos (ns)": "ns",
+    "numer pierwszej próbki (n1)": "n1",
+    "l": "l",
+    "Częstotliwość próbkowania (f)": "f",
+    "Prawdopodobieństwo wystąpienia A (p)": "p"
+}
+
+# Zaktualizowane pełne parametry
 signal_params = [
     "Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):",
     "Okres podstawowy (T):", "Współczynnik wypełnienia (kw):", "ts",
@@ -27,19 +43,25 @@ signal_params = [
     "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"
 ]
 
+# Zaktualizowane mapowanie parametrów dla sygnałów
 signal_params_map = {
-    "S1": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
-    "S2": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
-    "S3": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
-    "S4": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
-    "S5": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):"],
-    "S6": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Współczynnik wypełnienia (kw):"],
-    "S7": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Współczynnik wypełnienia (kw):"],
-    "S8": ["Amplituda (A):", "Okres podstawowy (T):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Współczynnik wypełnienia (kw):"],
-    "S9": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "ts"],
-    "S10": ["Amplituda (A):", "Numer próbki dla której następuje skos (ns):", "numer pierwszej próbki (n1):", "l", "Częstotliwość próbkowania (f):"],
-    "S11": ["Amplituda (A):", "Czas początkowy (t1):", "Czas trwania sygnału (d):", "Częstotliwość próbkowania (f):", "Prawdopodobieństwo wystąpienia A (p):"]
+    "S1": ["A", "t1", "d"],
+    "S2": ["A", "t1", "d"],
+    "S3": ["A", "T", "t1", "d"],
+    "S4": ["A", "T", "t1", "d"],
+    "S5": ["A", "T", "t1", "d"],
+    "S6": ["A", "T", "t1", "d", "kw"],
+    "S7": ["A", "T", "t1", "d", "kw"],
+    "S8": ["A", "T", "t1", "d", "kw"],
+    "S9": ["A", "t1", "d", "ts"],
+    "S10": ["A", "ns", "n1", "l", "f"],
+    "S11": ["A", "t1", "d", "f", "p"]
 }
+
+# Zaktualizowana funkcja do wyświetlania pełnych nazw parametrów
+def get_full_param_name(abbreviation):
+    return next((name for name, abbr in param_abbreviations.items() if abbr == abbreviation), abbreviation)
+
 
 def update_param_fields(*args):
     # Usuwamy stare pola
@@ -60,14 +82,13 @@ def update_param_fields(*args):
 
     # Tworzymy nowe pola tylko dla aktywnych parametrów
     for param in active_params:
+        full_param_name = get_full_param_name(param)
         frame = Frame(param_frame)
-        frame.pack(anchor="w")  # Ustawiamy wyrównanie na lewą stronę
-        # Wyrównujemy label do lewej z ustaloną szerokością
-        Label(frame, text=param, anchor="w", width=label_width).pack(fill="x")
-        entry = Entry(frame, width=entry_width, justify="left")  # Wyrównujemy tekst w Entry
-        entry.pack(fill="x")  # Wyrównujemy entry do lewej
-        entry.config(state=NORMAL)
-        param_entries[param] = entry
+        frame.pack(anchor="w")
+        Label(frame, text=full_param_name, anchor="w", width=label_width).pack(fill="x")
+        entry = Entry(frame, width=entry_width, justify="left")
+        entry.pack(fill="x")
+        param_entries[full_param_name] = entry
 
 def generate_signal(signal_type, frequency=1, amplitude=1, duration=1, sampling_rate=1000):
     t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
