@@ -68,10 +68,32 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.set_title(title)
     ax.grid()
 
+def calculate_signal_parameters(t, signal, frequency):
+    mean_value = np.mean(signal)
+    mean_abs_value = np.mean(np.abs(signal))
+    rms_value = np.sqrt(np.mean(signal**2))
+    variance = np.var(signal)
+    mean_power = np.mean(signal**2)
+    period = 1 / frequency
+    full_periods_count = int(np.floor(t[-1] / period))
+
+    if full_periods_count > 0:
+        start_index = int((t[-1] - full_periods_count * period) * len(t) / t[-1])
+        t_filtered = t[start_index:]
+        signal_filtered = signal[start_index:]
+
+        mean_value = np.mean(signal_filtered)
+        mean_abs_value = np.mean(np.abs(signal_filtered))
+        rms_value = np.sqrt(np.mean(signal_filtered**2))
+        variance = np.var(signal_filtered)
+        mean_power = np.mean(signal_filtered**2)
+
+    return mean_value, mean_abs_value, rms_value, variance, mean_power
 
 def update_plot():
     full_signal_name = signal_var.get()
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
+
     frequency = float(freq_var.get())
     amplitude = float(amplitude_var.get())
     duration = float(duration_var.get())
@@ -79,6 +101,21 @@ def update_plot():
     bins = int(bins_var.get())
 
     time, signal = generate_signal(signal_type, frequency, amplitude, duration, sampling_rate)
+    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, frequency)
+
+    # Wyświetlanie wyników obliczeń w GUI
+    params_text = (
+        f"Wartość średnia: {mean_value:.4f}\n"
+        f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
+        f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
+        f"Wariancja: {variance:.4f}\n"
+        f"Moc średnia: {mean_power:.4f}"
+    )
+
+    params_label = Label(frame_controls, text="Parametry sygnału", justify="left")
+    params_label.pack(pady=10)
+    params_label.config(text=params_text)
+
     plot_signal(ax1, time, signal, f"Sygnał {signal_type}")
     plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     canvas.draw()
