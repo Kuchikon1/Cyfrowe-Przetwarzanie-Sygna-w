@@ -91,12 +91,26 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.clear()  # Wyczyść poprzedni wykres
-    n, bins_edge, patches = ax.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2)
 
-    # Liczenie środków binów i wyświetlanie wartości liczności na słupkach histogramu
-    bin_centers = (bins_edge[:-1] + bins_edge[1:]) / 2
+    # Obliczamy dokładne min i max sygnału
+    A_min = np.min(signal)
+    A_max = np.max(signal)
+
+    # Obliczamy szerokość bina tak, aby środek pierwszego był na A_min, a ostatniego na A_max
+    bin_width = (A_max - A_min) / (bins - 1)
+    bin_centers = np.linspace(A_min, A_max, bins)  # Środki przedziałów
+    bin_edges = np.concatenate(([A_min - bin_width / 2], bin_centers + bin_width / 2))
+
+    # Obliczamy histogram
+    n, _, patches = ax.hist(signal, bins=bin_edges, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2)
+
+    # Ustawienie wartości osi X **dokładnie w środku słupków**
+    ax.set_xticks(bin_centers)
+    ax.set_xticklabels([f"{center:.2f}" for center in bin_centers], rotation=45)
+
+    # Wyświetlanie wartości liczności na słupkach histogramu
     for i in range(len(n)):
-        ax.text(bin_centers[i], n[i] + 0.5, f'{n[i]:.0f}', ha='center', va='bottom', fontsize=10)
+        ax.text(bin_centers[i], n[i] + 0.5, f'{int(n[i])}', ha='center', va='bottom', fontsize=10)
 
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
