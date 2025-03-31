@@ -158,8 +158,8 @@ def update_plot():
     params_label.config(text=params_text)
 
     if signal_type in ["S10", "S11"]:
-        plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
         plot_signal(ax1, time, signal, signal_type, f"Wykres {signal_type} - Sygnał")
+        plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     else:
         plot_signal(ax1, time, signal, signal_type, f"Sygnał {signal_type}")
         plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
@@ -193,8 +193,12 @@ def on_load():
                 param_entries[abbr].delete(0, "end")
                 param_entries[abbr].insert(0, str(value))
 
-        plot_signal(ax1, time, signal, f"Wczytany sygnał ({signal_type})", signal_type)
-        plot_histogram(ax2, signal, f"Histogram wczytanego sygnału", 10)
+        if signal_type in ["S10", "S11"]:
+            plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type} - Sygnał")
+            plot_histogram(ax2, signal, f"Histogram wczytanego wykresu {signal_type}", 10)
+        else:
+            plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type}")
+            plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
         canvas.draw()
 
 # Tworzenie GUI
