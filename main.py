@@ -116,24 +116,33 @@ def calculate_signal_parameters(t, signal, d, signal_type):
 
         effective_signal = np.sqrt(mean_power)
     else:
-        mean_value = np.trapz(signal, t) / d
-        mean_abs_value = np.trapz(np.abs(signal), t) / d
-        mean_power = np.trapz(signal**2, t) / d
-        variance = np.trapz((signal - np.mean(signal))**2, t) / d
+        if signal_type in ["S3", "S4", "S5", "S6", "S7", "S8"]:
+            T = np.mean(np.diff(t))
 
-        effective_signal = np.sqrt(mean_power)
+            full_periods_count = int(np.floor(d / T))
 
-        full_periods_count = int(np.floor(t[-1]))
+            if full_periods_count > 0:
+                start_index = 0
+                end_index = full_periods_count * int(T / np.mean(np.diff(t)))
 
-        if full_periods_count > 0:
-            start_index = int((t[-1] - full_periods_count) * len(t) / t[-1])
-            t_filtered = t[start_index:]
-            signal_filtered = signal[start_index:]
+                t_filtered = t[start_index:end_index]
+                signal_filtered = signal[start_index:end_index]
 
-            mean_value = np.trapz(signal_filtered, t_filtered) / d
-            mean_abs_value = np.trapz(np.abs(signal_filtered), t_filtered) / d
-            mean_power = np.trapz(signal_filtered**2, t_filtered) / d
-            variance = np.trapz((signal_filtered - np.mean(signal_filtered))**2, t_filtered) / d
+                mean_value = np.trapz(signal_filtered, t_filtered) / (t_filtered[-1] - t_filtered[0])
+                mean_abs_value = np.trapz(np.abs(signal_filtered), t_filtered) / (t_filtered[-1] - t_filtered[0])
+                mean_power = np.trapz(signal_filtered ** 2, t_filtered) / (t_filtered[-1] - t_filtered[0])
+                variance = np.trapz((signal_filtered - np.mean(signal_filtered)) ** 2, t_filtered) / (
+                            t_filtered[-1] - t_filtered[0])
+
+                effective_signal = np.sqrt(mean_power)
+            else:
+                raise ValueError("Zakres czasu nie zawiera pełnych okresów sygnału.")
+        else:
+            mean_value = np.trapz(signal, t) / d
+            mean_abs_value = np.trapz(np.abs(signal), t) / d
+            mean_power = np.trapz(signal ** 2, t) / d
+            variance = np.trapz((signal - np.mean(signal)) ** 2, t) / d
+
             effective_signal = np.sqrt(mean_power)
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
