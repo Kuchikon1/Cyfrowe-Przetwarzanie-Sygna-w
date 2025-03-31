@@ -7,18 +7,15 @@ import Signal_operations as so
 import Signal_functions as sf
 from Dictionary import signal_map, param_entries, param_abbreviations, signal_params_map
 
-# Zaktualizowana funkcja do wyświetlania pełnych nazw parametrów
 def get_full_param_name(abbreviation):
     return next((name for name, abbr in param_abbreviations.items() if abbr == abbreviation), abbreviation)
 
 def update_param_fields(*args):
-    # Usuwamy stare pola
     for widget in param_frame.winfo_children():
         widget.destroy()
 
     param_entries.clear()
 
-    # Pobieramy wybrany typ sygnału
     signal_type = [key for key, value in signal_map.items() if value == signal_var.get()]
     if not signal_type:
         return
@@ -26,11 +23,9 @@ def update_param_fields(*args):
     signal_type = signal_type[0]
     active_params = signal_params_map.get(signal_type, [])
 
-    # Ustalmy stałą szerokość dla pól
     label_width = 32
     entry_width = 32
 
-    # Tworzymy nowe pola tylko dla aktywnych parametrów
     for param in active_params:
         full_param_name = get_full_param_name(param)
         frame = Frame(param_frame)
@@ -90,13 +85,22 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
 
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
-    ax.clear()  # Wyczyść poprzedni wykres
-    n, bins_edge, patches = ax.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2)
+    ax.clear()
 
-    # Liczenie środków binów i wyświetlanie wartości liczności na słupkach histogramu
-    bin_centers = (bins_edge[:-1] + bins_edge[1:]) / 2
+    A_min = np.min(signal)
+    A_max = np.max(signal)
+
+    bin_width = (A_max - A_min) / (bins - 1)
+    bin_centers = np.linspace(A_min, A_max, bins)
+    bin_edges = np.concatenate(([A_min - bin_width / 2], bin_centers + bin_width / 2))
+
+    n, _, patches = ax.hist(signal, bins=bin_edges, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2)
+
+    ax.set_xticks(bin_centers)
+    ax.set_xticklabels([f"{center:.2f}" for center in bin_centers], rotation=45)
+
     for i in range(len(n)):
-        ax.text(bin_centers[i], n[i] + 0.5, f'{n[i]:.0f}', ha='center', va='bottom', fontsize=10)
+        ax.text(bin_centers[i], n[i] + 0.5, f'{int(n[i])}', ha='center', va='bottom', fontsize=10)
 
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
@@ -110,31 +114,35 @@ def calculate_signal_parameters(t, signal, d, signal_type):
         mean_power = np.mean(signal ** 2)
         variance = np.var(signal)
 
-        # Skuteczna moc (RMS)
         effective_signal = np.sqrt(mean_power)
     else:
-        # Całkowanie numeryczne
-        mean_value = np.trapz(signal, t) / d
-        mean_abs_value = np.trapz(np.abs(signal), t) / d
-        mean_power = np.trapz(signal**2, t) / d
-        variance = np.trapz((signal - np.mean(signal))**2, t) / d
+        if signal_type in ["S3", "S4", "S5", "S6", "S7", "S8"]:
+            T = np.mean(np.diff(t))
 
-        # Skuteczna moc (RMS)
-        effective_signal = np.sqrt(mean_power)
+            full_periods_count = int(np.floor(d / T))
 
-        # Całkowanie tylko dla pełnych okresów, jeśli t[-1] (czas końcowy) jest większy niż 0
-        full_periods_count = int(np.floor(t[-1]))
+            if full_periods_count > 0:
+                start_index = 0
+                end_index = full_periods_count * int(T / np.mean(np.diff(t)))
 
-        if full_periods_count > 0:
-            start_index = int((t[-1] - full_periods_count) * len(t) / t[-1])
-            t_filtered = t[start_index:]
-            signal_filtered = signal[start_index:]
+                t_filtered = t[start_index:end_index]
+                signal_filtered = signal[start_index:end_index]
 
-            # Całkowanie numeryczne dla przefiltrowanych danych
-            mean_value = np.trapz(signal_filtered, t_filtered) / d
-            mean_abs_value = np.trapz(np.abs(signal_filtered), t_filtered) / d
-            mean_power = np.trapz(signal_filtered**2, t_filtered) / d
-            variance = np.trapz((signal_filtered - np.mean(signal_filtered))**2, t_filtered) / d
+                mean_value = np.trapz(signal_filtered, t_filtered) / (t_filtered[-1] - t_filtered[0])
+                mean_abs_value = np.trapz(np.abs(signal_filtered), t_filtered) / (t_filtered[-1] - t_filtered[0])
+                mean_power = np.trapz(signal_filtered ** 2, t_filtered) / (t_filtered[-1] - t_filtered[0])
+                variance = np.trapz((signal_filtered - np.mean(signal_filtered)) ** 2, t_filtered) / (
+                            t_filtered[-1] - t_filtered[0])
+
+                effective_signal = np.sqrt(mean_power)
+            else:
+                raise ValueError("Zakres czasu nie zawiera pełnych okresów sygnału.")
+        else:
+            mean_value = np.trapz(signal, t) / d
+            mean_abs_value = np.trapz(np.abs(signal), t) / d
+            mean_power = np.trapz(signal ** 2, t) / d
+            variance = np.trapz((signal - np.mean(signal)) ** 2, t) / d
+
             effective_signal = np.sqrt(mean_power)
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
@@ -175,8 +183,6 @@ def on_save():
         return
 
     time, signal, d = generate_signal(signal_type)
-
-    # Pobranie parametrów
     params = {abbr: float(entry.get()) for abbr, entry in param_entries.items()}
 
     fo.save_signal(time, signal, params, signal_type)
@@ -245,10 +251,8 @@ bins_var = StringVar(value="10")
 bins_entry = Entry(frame_bottom, textvariable=bins_var, width=35)
 bins_entry.pack(side="top", padx=10, pady=5)
 
-# Przycisk Generuj
 Button(frame_bottom, text="Generuj", command=update_plot, font=("Arial", 12)).pack(side="top", padx=5, pady=10)
 
-# Frame na wartości (średnia, RMS itd.)
 params_label = Label(frame_bottom, text="Wartość średnia: 0.0000\n"
                                            "Wartość średnia bezwzględna: 0.0000\n"
                                            "Wartość skuteczna (RMS): 0.0000\n"
