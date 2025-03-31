@@ -16,6 +16,8 @@ def update_param_fields(*args):
     for widget in param_frame.winfo_children():
         widget.destroy()
 
+    param_entries.clear()
+
     # Pobieramy wybrany typ sygnału
     signal_type = [key for key, value in signal_map.items() if value == signal_var.get()]
     if not signal_type:
@@ -65,9 +67,9 @@ def generate_signal(signal_type):
     elif signal_type == "S9":
         t, signal, d, t1 = sf.skok_jednostkowy(par['A'], par['t1'], par['d'], par['ts'])
     elif signal_type == "S10":
-        t, signal = sf.impuls_jednostkowy(par['A'], par['ns'], par['n1'], par['d'], par['f'])
+        t, signal, d = sf.impuls_jednostkowy(par['A'], par['ns'], par['n1'], par['d'], par['f'])
     elif signal_type == "S11":
-        t, signal = sf.szum_impulsowy(par['A'], par['t1'], par['d'], par['f'], par['p'])
+        t, signal, d = sf.szum_impulsowy(par['A'], par['t1'], par['d'], par['f'], par['p'])
     else:
         raise ValueError("Nieznany typ sygnału")
 

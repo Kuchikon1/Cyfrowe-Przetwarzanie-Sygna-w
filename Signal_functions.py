@@ -105,10 +105,12 @@ def skok_jednostkowy(A, t1, d, ts):
 
 
 def impuls_jednostkowy(A, ns, n1, d, f):
-    t = np.arange(ns, np.abs(d * ns), f)
-    y = np.where(t == n1, A, 0)
+    t = np.arange(n1, n1 + d, f)
+    y = np.zeros_like(t)
+    idx = np.abs(t - ns).argmin()
+    y[idx] = A
 
-    return t, y
+    return t, y, d
 
 
 def szum_impulsowy(A, t1, d, f, p):
@@ -116,4 +118,4 @@ def szum_impulsowy(A, t1, d, f, p):
     y = np.random.random(t.shape[0])
     y = np.where(y <= p, A, 0)
 
-    return t, y
+    return t, y, d
