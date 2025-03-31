@@ -65,18 +65,21 @@ def generate_signal(signal_type):
     elif signal_type == "S9":
         t, signal, d, t1 = sf.skok_jednostkowy(par['A'], par['t1'], par['d'], par['ts'])
     elif signal_type == "S10":
-        t, signal = sf.impuls_jednostkowy(par['A'], par['ns'], par['n1'], par['l'], par['f'])
+        t, signal = sf.impuls_jednostkowy(par['A'], par['ns'], par['n1'], par['d'], par['f'])
     elif signal_type == "S11":
         t, signal = sf.szum_impulsowy(par['A'], par['t1'], par['d'], par['f'], par['p'])
     else:
         raise ValueError("Nieznany typ sygnału")
 
-    return t, signal
+    return t, signal, d
 
 
-def plot_signal(ax, time, signal, title="Wykres sygnału"):
+def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.clear()
-    ax.plot(time, signal, label="Sygnał")
+    if signal_type in ["S10", "S11"]:
+        ax.scatter(time, signal, label="Sygnał", color='blue')
+    else:
+        ax.plot(time, signal, label="Sygnał")
     ax.set_xlabel("Czas [s]")
     ax.set_ylabel("Amplituda")
     ax.set_title(title)
@@ -85,46 +88,54 @@ def plot_signal(ax, time, signal, title="Wykres sygnału"):
 
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
-    ax.clear()
-    min_signal, max_signal = np.min(signal), np.max(signal)
-    bin_width = (max_signal - min_signal) / bins
-    bins_edge = np.linspace(min_signal, max_signal, bins + 1)
+    ax.clear()  # Wyczyść poprzedni wykres
+    n, bins_edge, patches = ax.hist(signal, bins=bins, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2)
 
-    n, bins_edge, patches = ax.hist(signal, bins=bins_edge, alpha=0.75, color='blue', edgecolor='black', linewidth=1.2, align='mid')
-
+    # Liczenie środków binów i wyświetlanie wartości liczności na słupkach histogramu
     bin_centers = (bins_edge[:-1] + bins_edge[1:]) / 2
-    ax.set_xticks(np.arange(np.floor(min_signal), np.ceil(max_signal), bin_width))
-    ax.set_xticklabels([f'{x:.0f}' for x in np.arange(np.floor(min_signal), np.ceil(max_signal), bin_width)])
-
     for i in range(len(n)):
-        bin_center = bin_centers[i]
-        ax.text(bin_center, n[i] + 0.5, f'{n[i]:.0f}', ha='center', va='bottom', fontsize=10)
+        ax.text(bin_centers[i], n[i] + 0.5, f'{n[i]:.0f}', ha='center', va='bottom', fontsize=10)
 
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
     ax.set_title(title)
 
 
-def calculate_signal_parameters(t, signal):
-    mean_value = np.mean(signal)
-    mean_abs_value = np.mean(np.abs(signal))
-    rms_value = np.sqrt(np.mean(signal**2))
-    variance = np.var(signal)
-    mean_power = np.mean(signal**2)
-    full_periods_count = int(np.floor(t[-1]))
+def calculate_signal_parameters(t, signal, d, signal_type):
+    if signal_type in ["S10", "S11"]:
+        mean_value = np.mean(signal)
+        mean_abs_value = np.mean(np.abs(signal))
+        mean_power = np.mean(signal ** 2)
+        variance = np.var(signal)
 
-    if full_periods_count > 0:
-        start_index = int((t[-1] - full_periods_count) * len(t) / t[-1])
-        t_filtered = t[start_index:]
-        signal_filtered = signal[start_index:]
+        # Skuteczna moc (RMS)
+        effective_signal = np.sqrt(mean_power)
+    else:
+        # Całkowanie numeryczne
+        mean_value = np.trapz(signal, t) / d
+        mean_abs_value = np.trapz(np.abs(signal), t) / d
+        mean_power = np.trapz(signal**2, t) / d
+        variance = np.trapz((signal - np.mean(signal))**2, t) / d
 
-        mean_value = np.mean(signal_filtered)
-        mean_abs_value = np.mean(np.abs(signal_filtered))
-        rms_value = np.sqrt(np.mean(signal_filtered**2))
-        variance = np.var(signal_filtered)
-        mean_power = np.mean(signal_filtered**2)
+        # Skuteczna moc (RMS)
+        effective_signal = np.sqrt(mean_power)
 
-    return mean_value, mean_abs_value, rms_value, variance, mean_power
+        # Całkowanie tylko dla pełnych okresów, jeśli t[-1] (czas końcowy) jest większy niż 0
+        full_periods_count = int(np.floor(t[-1]))
+
+        if full_periods_count > 0:
+            start_index = int((t[-1] - full_periods_count) * len(t) / t[-1])
+            t_filtered = t[start_index:]
+            signal_filtered = signal[start_index:]
+
+            # Całkowanie numeryczne dla przefiltrowanych danych
+            mean_value = np.trapz(signal_filtered, t_filtered) / d
+            mean_abs_value = np.trapz(np.abs(signal_filtered), t_filtered) / d
+            mean_power = np.trapz(signal_filtered**2, t_filtered) / d
+            variance = np.trapz((signal_filtered - np.mean(signal_filtered))**2, t_filtered) / d
+            effective_signal = np.sqrt(mean_power)
+
+    return mean_value, mean_abs_value, effective_signal, variance, mean_power
 
 
 def update_plot():
@@ -132,8 +143,8 @@ def update_plot():
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
     bins = int(bins_var.get())
 
-    time, signal = generate_signal(signal_type)
-    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal)
+    time, signal, d = generate_signal(signal_type)
+    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, d, signal_type)
 
     params_text = (
         f"Wartość średnia: {mean_value:.4f}\n"
@@ -144,8 +155,12 @@ def update_plot():
     )
     params_label.config(text=params_text)
 
-    plot_signal(ax1, time, signal, f"Sygnał {signal_type}")
-    plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
+    if signal_type in ["S10", "S11"]:
+        plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
+        plot_signal(ax1, time, signal, signal_type, f"Wykres {signal_type} - Sygnał")
+    else:
+        plot_signal(ax1, time, signal, signal_type, f"Sygnał {signal_type}")
+        plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     canvas.draw()
 
 
@@ -157,7 +172,7 @@ def on_save():
         print(f"Błąd: Nieznany sygnał '{full_signal_name}'")
         return
 
-    time, signal = generate_signal(signal_type)
+    time, signal, d = generate_signal(signal_type)
 
     # Pobranie parametrów
     params = {abbr: float(entry.get()) for abbr, entry in param_entries.items()}
@@ -169,7 +184,6 @@ def on_load():
     time, signal, params, signal_type = fo.load_signal()
 
     if time is not None and signal is not None:
-        # Ustawienie wartości pól zgodnie z wczytanym sygnałem
         signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
 
         for abbr, value in params.items():
@@ -177,7 +191,7 @@ def on_load():
                 param_entries[abbr].delete(0, "end")
                 param_entries[abbr].insert(0, str(value))
 
-        plot_signal(ax1, time, signal, f"Wczytany sygnał ({signal_type})")
+        plot_signal(ax1, time, signal, f"Wczytany sygnał ({signal_type})", signal_type)
         plot_histogram(ax2, signal, f"Histogram wczytanego sygnału", 10)
         canvas.draw()
 

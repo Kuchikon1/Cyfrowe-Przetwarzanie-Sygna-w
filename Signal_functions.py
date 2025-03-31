@@ -96,17 +96,16 @@ def sygnal_trojkatny(A, T, t1, d, kw):
     return t, y, d, t1
 
 
-def skok_jednostkowy(A, ts, t1, d):
+def skok_jednostkowy(A, t1, d, ts):
     t = np.linspace(t1, t1 + d, N)
     y = np.zeros_like(t)
 
-    y = np.where(t < ts, 0, A)
-
+    y[t >= ts] = A
     return t, y, d, t1
 
 
-def impuls_jednostkowy(A, ns, n1, l, f):
-    t = np.arange(ns, np.abs(l * ns), f)
+def impuls_jednostkowy(A, ns, n1, d, f):
+    t = np.arange(ns, np.abs(d * ns), f)
     y = np.where(t == n1, A, 0)
 
     return t, y

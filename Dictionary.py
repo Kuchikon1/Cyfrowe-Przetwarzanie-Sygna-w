@@ -23,10 +23,9 @@ param_abbreviations = {
     "Czas trwania sygnału (d)": "d",
     "Okres podstawowy (T)": "T",
     "Współczynnik wypełnienia (kw)": "kw",
-    "ts": "ts",
+    "Czas skoku (ts)": "ts",
     "Numer próbki dla której następuje skos (ns)": "ns",
     "numer pierwszej próbki (n1)": "n1",
-    "l": "l",
     "Częstotliwość próbkowania (f)": "f",
     "Prawdopodobieństwo wystąpienia A (p)": "p"
 }
@@ -42,6 +41,6 @@ signal_params_map = {
     "S7": ["A", "T", "t1", "d", "kw"],
     "S8": ["A", "T", "t1", "d", "kw"],
     "S9": ["A", "t1", "d", "ts"],
-    "S10": ["A", "ns", "n1", "l", "f"],
+    "S10": ["A", "ns", "n1", "d", "f"],
     "S11": ["A", "t1", "d", "f", "p"]
 }
