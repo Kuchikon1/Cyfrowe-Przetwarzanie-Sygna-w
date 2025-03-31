@@ -193,6 +193,17 @@ def on_load():
                 param_entries[abbr].delete(0, "end")
                 param_entries[abbr].insert(0, str(value))
 
+        mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, len(time), signal_type)
+
+        params_text = (
+            f"Wartość średnia: {mean_value:.4f}\n"
+            f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
+            f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
+            f"Wariancja: {variance:.4f}\n"
+            f"Moc średnia: {mean_power:.4f}"
+        )
+        params_label.config(text=params_text)
+
         if signal_type in ["S10", "S11"]:
             plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type} - Sygnał")
             plot_histogram(ax2, signal, f"Histogram wczytanego wykresu {signal_type}", 10)
