@@ -50,6 +50,10 @@ def divide_signals(time1, signal1, params1, signal_type1, time2, signal2, params
     if len(time1) != len(time2):
         print("Błąd: Czas sygnałów musi być taki sam")
         return None, None, None, None
-    # Unikamy dzielenia przez zero
+    if not np.allclose(time1, time2):
+        print("Błąd: Czas sygnałów musi być dokładnie taki sam")
+        return None, None, None, None
+
     result_signal = np.divide(signal1, signal2, where=signal2 != 0)
+    result_signal[signal2 == 0] = 0
     return time1, result_signal
