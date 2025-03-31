@@ -240,7 +240,7 @@ param_frame.pack(padx=0, pady=0)
 frame_bottom = Frame(root)
 frame_bottom.pack(side="bottom", fill="x", padx=10, pady=10)
 
-Label(frame_bottom, text="Liczba binów:").pack(side="top", padx=10)
+Label(frame_bottom, text="Liczba słupków na histogramie:").pack(side="top", padx=10)
 bins_var = StringVar(value="10")
 bins_entry = Entry(frame_bottom, textvariable=bins_var, width=35)
 bins_entry.pack(side="top", padx=10, pady=5)
