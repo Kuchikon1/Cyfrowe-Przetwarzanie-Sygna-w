@@ -22,34 +22,34 @@ def load_signal():
         return None, None, None, None
 
 
-def add_signals(time1, signal1, time2, signal2):
+def add_signals(time1, signal1, params1, signal_type1, time2, signal2, params2, signal_type2):
     if len(time1) != len(time2):
         print("Błąd: Czas sygnałów musi być taki sam")
-        return None, None
+        return None, None, None, None
     result_signal = np.add(signal1, signal2)
     return time1, result_signal
 
 
-def subtract_signals(time1, signal1, time2, signal2):
+def subtract_signals(time1, signal1, params1, signal_type1, time2, signal2, params2, signal_type2):
     if len(time1) != len(time2):
         print("Błąd: Czas sygnałów musi być taki sam")
-        return None, None
+        return None, None, None, None
     result_signal = np.subtract(signal1, signal2)
     return time1, result_signal
 
 
-def multiply_signals(time1, signal1, time2, signal2):
+def multiply_signals(time1, signal1, params1, signal_type1, time2, signal2, params2, signal_type2):
     if len(time1) != len(time2):
         print("Błąd: Czas sygnałów musi być taki sam")
-        return None, None
+        return None, None, None, None
     result_signal = np.multiply(signal1, signal2)
     return time1, result_signal
 
 
-def divide_signals(time1, signal1, time2, signal2):
+def divide_signals(time1, signal1, params1, signal_type1, time2, signal2, params2, signal_type2):
     if len(time1) != len(time2):
         print("Błąd: Czas sygnałów musi być taki sam")
-        return None, None
+        return None, None, None, None
     # Unikamy dzielenia przez zero
     result_signal = np.divide(signal1, signal2, where=signal2 != 0)
     return time1, result_signal

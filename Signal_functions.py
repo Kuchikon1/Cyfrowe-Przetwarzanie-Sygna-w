@@ -41,17 +41,15 @@ def sygnal_prostokatny(A, T, t1, d, kw):
     t = np.linspace(t1, t1 + d, N)
     y = np.zeros_like(t)
 
-    ranges = []
+    high_duration = kw * T
 
-    for k in range(math.ceil((t1 + d) / T)):
-        ranges.append((k * T + t1, k * T + kw * T + t1))
+    for k in range(math.ceil((d) / T)):
+        start = t1 + k * T
+        high_end = start + high_duration
 
-    for r in ranges[::2]:
         for i, elem in enumerate(t):
-            if elem >= r[0] and elem < r[1]:
+            if start <= elem < high_end:
                 y[i] = A
-            else:
-                y[i] = 0 if y[i] != A else y[i]
 
     return t, y, d, t1
 
@@ -60,17 +58,19 @@ def sygnal_prostokatny_symetryczny(A, T, t1, d, kw):
     t = np.linspace(t1, t1 + d, N)
     y = np.zeros_like(t)
 
-    ranges = []
+    high_duration = kw * T
+    low_duration = T - high_duration
 
-    for k in range(math.ceil((t1 + d) / T)):
-        ranges.append((k * T + t1, k * T + kw * T + t1))
+    for k in range(math.ceil((d) / T)):
+        start = t1 + k * T
+        high_end = start + high_duration
+        low_end = high_end + low_duration
 
-    for r in ranges[::2]:
         for i, elem in enumerate(t):
-            if elem >= r[0] and elem < r[1]:
+            if start <= elem < high_end:
                 y[i] = A
-            else:
-                y[i] = -A if y[i] != A else y[i]
+            elif high_end <= elem < low_end:
+                y[i] = -A
 
     return t, y, d, t1
 
@@ -105,10 +105,10 @@ def skok_jednostkowy(A, t1, d, ts):
 
 
 def impuls_jednostkowy(A, ns, n1, d, f):
-    t = np.arange(n1, n1 + d, f)
+    t = np.arange(n1, d, f)
     y = np.zeros_like(t)
-    idx = np.abs(t - ns).argmin()
-    y[idx] = A
+
+    y[int(ns - n1)] = A
 
     return t, y, d
 
