@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, Toplevel
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
@@ -11,7 +11,6 @@ def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
 
 def update_param_fields(*args):
-    # Usuwamy tylko pola parametrów sygnału
     for widget in param_frame.winfo_children():
         widget.destroy()
 
@@ -37,11 +36,10 @@ def update_param_fields(*args):
         param_entries[full_param_name] = entry  # Dodajemy pole do słownika parametrów sygnału
 
 def update_conversion_fields(*args):
-    # Usuwamy tylko pola parametrów konwersji
     for widget in conversion_param_frame.winfo_children():
         widget.destroy()
 
-    conversion_param_entries.clear()  # Czyszczenie słownika dla parametrów konwersji
+    conversion_param_entries.clear()
 
     conversion_type = [key for key, value in conversions.items() if value == option_var.get()]
     if not conversion_type:
@@ -49,7 +47,6 @@ def update_conversion_fields(*args):
 
     conversion_type = conversion_type[0]
     active_conversion_params = conversions_params_map.get(conversion_type, [])
-    print(f"Wybrane parametry dla konwersji {conversion_type}: {active_conversion_params}")
 
     label_width = 32
     entry_width = 32
@@ -247,6 +244,15 @@ def on_load():
             plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
         canvas.draw()
 
+def open_new_window():
+    # Tworzenie nowego okna
+    new_window = Toplevel(root)
+    new_window.title("Nowe Okno")
+
+    # Dodawanie elementów do nowego okna
+    Label(new_window, text="To jest nowe okno!").pack(padx=20, pady=20)
+    Button(new_window, text="Zamknij", command=new_window.destroy).pack(pady=10)
+
 # Tworzenie GUI
 root = Tk()
 root.title("Generator Sygnałów")
@@ -276,7 +282,7 @@ Label(frame_conversions, text="Wybierz opcję:").pack()
 option_combo = ttk.Combobox(frame_conversions, textvariable=option_var, values=list(conversions.values()), width=40)
 option_combo.pack()
 
-Button(frame_conversions, text="Wykonaj", font=("Arial", 12)).pack(side="top", pady=10, padx=10)
+Button(frame_conversions, text="Wykonaj", font=("Arial", 12), command=open_new_window).pack(side="top", pady=10, padx=10)
 
 frame_controls = Frame(root)
 frame_controls.pack(side="top", padx=13, pady=10)
