@@ -5,35 +5,64 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
-from Dictionary import signal_map, param_entries, param_abbreviations, signal_params_map
+from Dictionary import signal_map, param_entries, param_abbreviations, signal_params_map, conversions, conversion_param_entries, conversion_param_abbreviations, conversions_params_map
 
-def get_full_param_name(abbreviation):
-    return next((name for name, abbr in param_abbreviations.items() if abbr == abbreviation), abbreviation)
+def get_full_param_name(abbreviation, pool):
+    return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
 
 def update_param_fields(*args):
+    # Usuwamy tylko pola parametrów sygnału
     for widget in param_frame.winfo_children():
         widget.destroy()
 
-    param_entries.clear()
+    param_entries.clear()  # Czyszczenie słownika dla parametrów sygnałów
 
     signal_type = [key for key, value in signal_map.items() if value == signal_var.get()]
     if not signal_type:
         return
 
     signal_type = signal_type[0]
-    active_params = signal_params_map.get(signal_type, [])
+    active_signal_params = signal_params_map.get(signal_type, [])
 
     label_width = 32
     entry_width = 32
 
-    for param in active_params:
-        full_param_name = get_full_param_name(param)
+    for param in active_signal_params:
+        full_param_name = get_full_param_name(param, param_abbreviations)
         frame = Frame(param_frame)
         frame.pack(anchor="w")
         Label(frame, text=full_param_name, anchor="w", width=label_width).pack(fill="x")
         entry = Entry(frame, width=entry_width, justify="left")
         entry.pack(fill="x")
-        param_entries[full_param_name] = entry
+        param_entries[full_param_name] = entry  # Dodajemy pole do słownika parametrów sygnału
+
+def update_conversion_fields(*args):
+    # Usuwamy tylko pola parametrów konwersji
+    for widget in conversion_param_frame.winfo_children():
+        widget.destroy()
+
+    conversion_param_entries.clear()  # Czyszczenie słownika dla parametrów konwersji
+
+    conversion_type = [key for key, value in conversions.items() if value == option_var.get()]
+    if not conversion_type:
+        return
+
+    conversion_type = conversion_type[0]
+    active_conversion_params = conversions_params_map.get(conversion_type, [])
+    print(f"Wybrane parametry dla konwersji {conversion_type}: {active_conversion_params}")
+
+    label_width = 32
+    entry_width = 32
+
+    for param in active_conversion_params:
+        full_param_name = get_full_param_name(param, conversion_param_abbreviations)
+        frame = Frame(conversion_param_frame)
+        frame.pack(anchor="w")
+        Label(frame, text=full_param_name, anchor="w", width=label_width).pack(fill="x")
+        entry = Entry(frame, width=entry_width, justify="left")
+        entry.pack(fill="x")
+        conversion_param_entries[full_param_name] = entry
+
 
 def generate_signal(signal_type):
     params = {full_name: float(param_entries[full_name].get()) for full_name in param_entries}
@@ -225,11 +254,29 @@ root.title("Generator Sygnałów")
 frame_buttons = Frame(root)
 frame_buttons.pack(side="top", anchor="w", padx=10, pady=10)
 
-frame_plot = Frame(root)
-frame_plot.pack(side="right", padx=10, pady=10)
+# Kontener na wykresy i dodatkową przestrzeń po prawej stronie
+frame_right_container = Frame(root)
+frame_right_container.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
-signal_var = StringVar(value="")
-signal_var.trace("w", update_param_fields)
+# Ramka z wykresami
+frame_plot = Frame(frame_right_container)
+frame_plot.pack(side="left", anchor="n")
+
+# Pusta przestrzeń po prawej – przyszłe elementy GUI będą tu
+frame_conversions = Frame(frame_right_container, width=300, bg="#f0f0f0")
+frame_conversions.pack(side="top", fill="y", padx=10)
+
+conversion_param_frame = Frame(frame_right_container)
+conversion_param_frame.pack(padx=0, pady=0)
+
+# Zmienna do przechowywania wyboru
+option_var = StringVar(value="")
+option_var.trace("w", update_conversion_fields)
+Label(frame_conversions, text="Wybierz opcję:").pack()
+option_combo = ttk.Combobox(frame_conversions, textvariable=option_var, values=list(conversions.values()), width=40)
+option_combo.pack()
+
+Button(frame_conversions, text="Wykonaj", font=("Arial", 12)).pack(side="top", pady=10, padx=10)
 
 frame_controls = Frame(root)
 frame_controls.pack(side="top", padx=13, pady=10)
