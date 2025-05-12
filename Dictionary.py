@@ -50,9 +50,9 @@ signal_params_map = {
 #--------------------------- Lista Konwersji ---------------------------
 
 conversions = {
-    "S": "(S) Próbkowanie równoramienne",
-    "Q1": "(Q1) Kwantyzacja równoramienna z obcięciem",
-    "Q2": "(Q2) Kwantyzacja równoramienna z zaokrągleniem",
+    "S": "(S) Próbkowanie równomierne",
+    "Q1": "(Q1) Kwantyzacja równomierna z obcięciem",
+    "Q2": "(Q2) Kwantyzacja równomierna z zaokrągleniem",
     "R1": "(R1) Ekstrapolacja zerowego rzędu",
     "R2": "(R2) Interpolacja pierwszego rzędu",
     "R3": "(R3) Rekonstruckaj w opraciu o funkcję sinc",
