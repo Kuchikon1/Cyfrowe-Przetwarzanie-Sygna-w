@@ -33,7 +33,7 @@ def update_param_fields(*args):
         Label(frame, text=full_param_name, anchor="w", width=label_width).pack(fill="x")
         entry = Entry(frame, width=entry_width, justify="left")
         entry.pack(fill="x")
-        param_entries[full_param_name] = entry  # Dodajemy pole do słownika parametrów sygnału
+        param_entries[full_param_name] = entry
 
 def update_conversion_fields(*args):
     for widget in conversion_param_frame.winfo_children():
@@ -244,14 +244,88 @@ def on_load():
             plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
         canvas.draw()
 
-def open_new_window():
-    # Tworzenie nowego okna
-    new_window = Toplevel(root)
-    new_window.title("Nowe Okno")
+def convert_signal(time, signal, conversion_type):
+    conversion_params = {full_name: float(conversion_param_entries[full_name].get()) for full_name in conversion_param_entries}
 
-    # Dodawanie elementów do nowego okna
-    Label(new_window, text="To jest nowe okno!").pack(padx=20, pady=20)
-    Button(new_window, text="Zamknij", command=new_window.destroy).pack(pady=10)
+    c_par = {}
+    for full_c_param, value in conversion_params.items():
+        abbreviation = conversion_param_abbreviations.get(full_c_param, full_c_param)
+        c_par[abbreviation] = value
+
+    if conversion_type == "S":
+        f = c_par["f"]  # Częstotliwość próbkowania
+        dt = 1 / f
+        time_new = np.arange(time[0], time[-1], dt)
+        signal_new = np.interp(time_new, time, signal)
+        return time_new, signal_new
+
+    elif conversion_type == "Q1":  # Kwantyzacja równoramienna z obcięciem
+        kw = c_par["kw"]  # Liczba poziomów kwantyzacji
+        signal_min, signal_max = np.min(signal), np.max(signal)
+        levels = np.linspace(signal_min, signal_max, kw)
+        signal_new = np.digitize(signal, levels) - 1  # Przypisanie do poziomów
+        signal_new = levels[signal_new]
+        return time, signal_new
+
+    elif conversion_type == "Q2":  # Kwantyzacja równoramienna z zaokrągleniem
+        kw = c_par["kw"]
+        signal_min, signal_max = np.min(signal), np.max(signal)
+        levels = np.linspace(signal_min, signal_max, kw)
+        signal_new = np.round(np.digitize(signal, levels) - 1)  # Zaokrąglenie
+        signal_new = levels[signal_new.astype(int)]
+        return time, signal_new
+
+    elif conversion_type == "R1":  # Ekstrapolacja zerowego rzędu
+        nb = c_par["nb"]  # Liczba sąsiadów
+        signal_new = np.interp(time, time[:nb], signal[:nb])
+        return time, signal_new
+
+    elif conversion_type == "R2":  # Interpolacja pierwszego rzędu
+        nb = c_par["nb"]
+        signal_new = np.interp(time, time[:nb], signal[:nb])
+        return time, signal_new
+
+    elif conversion_type == "R3":  # Rekonstrukcja w oparciu o funkcję sinc
+        nb = c_par["nb"]
+        signal_new = np.interp(time, time[:nb], signal[:nb])  # Użycie interpolacji jako prosty przykład
+        return time, signal_new
+
+    else:
+        raise ValueError(f"Nieznany typ konwersji: {conversion_type}")
+
+def open_new_window():
+    # Tworzymy nowe okno
+    new_window = Toplevel(root)
+    new_window.title("Nowe Okno - Sygnał po konwersji")
+
+    # Utwórz wykresy w nowym oknie
+    fig, ax1 = plt.subplots(figsize=(8, 6))
+    plt.subplots_adjust(hspace=0.4)
+
+    # Pobieramy dane z głównego okna
+    full_signal_name = signal_var.get()
+    signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
+
+    # Generujemy sygnał
+    time, signal, d = generate_signal(signal_type)
+
+    conversion_display_name = option_var.get()
+    conversion_type = [key for key, value in conversions.items() if value == conversion_display_name]
+    if not conversion_type:
+        raise ValueError(f"Nieprawidłowy typ konwersji: {conversion_display_name}")
+    conversion_type = conversion_type[0]
+
+    time, signal = convert_signal(time, signal, conversion_type)
+
+    # Rysowanie wykresu
+    plot_signal(ax1, time, signal, signal_type, f"Sygnał po konwersji: {conversion_type}")
+
+    # Wyświetlanie wykresów na nowym oknie
+    canvas_new = FigureCanvasTkAgg(fig, master=new_window)
+    canvas_new.get_tk_widget().pack(padx=20, pady=20)
+
+    # Rysowanie wykresu
+    canvas_new.draw()
 
 # Tworzenie GUI
 root = Tk()
