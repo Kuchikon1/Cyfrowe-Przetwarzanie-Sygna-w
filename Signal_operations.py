@@ -1,5 +1,4 @@
 import File_operations as fo
-import main as main
 
 # Funkcje do operacji na sygnałach
 def on_add():
@@ -43,6 +42,7 @@ def on_divide():
             update_plot_after_operation(time, result_signal, params_result, "Dzielenie")
 
 def update_plot_after_operation(time, result_signal, params, operation_type):
+    import main
     mean_value, mean_abs_value, rms_value, variance, mean_power = main.calculate_signal_parameters(time, result_signal, len(time), operation_type)
 
     params_text = (
