@@ -15,7 +15,7 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.legend()
     ax.grid()
 
-def create_conversion_window(root, title, signal_var, option_var, conversion_param_entries, on_save, on_load):
+def create_conversion_window(root, title, signal_var, conversion_param_entries, on_save, on_load):
     new_window = Toplevel(root)
     new_window.title(title)
     new_window.geometry("1000x700")
