@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, Toplevel
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
@@ -11,11 +11,14 @@ from Conversion_windows import create_conversion_window
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
 
-def update_param_fields(*args):
-    for widget in param_frame.winfo_children():
+def clean_widget(frame):
+    for widget in frame.winfo_children():
         widget.destroy()
 
-    param_entries.clear()  # Czyszczenie słownika dla parametrów sygnałów
+def update_param_fields(*args):
+    clean_widget(param_frame)
+
+    param_entries.clear()
 
     signal_type = [key for key, value in signal_map.items() if value == signal_var.get()]
     if not signal_type:
@@ -37,8 +40,7 @@ def update_param_fields(*args):
         param_entries[full_param_name] = entry
 
 def update_conversion_fields(*args):
-    for widget in conversion_param_frame.winfo_children():
-        widget.destroy()
+    clean_widget(conversion_param_frame)
 
     conversion_param_entries.clear()
 
@@ -217,33 +219,41 @@ def on_save():
 
 def on_load():
     time, signal, params, signal_type = fo.load_signal()
+    if time is None or signal is None:
+        return None
+    return time, signal, params, signal_type
 
-    if time is not None and signal is not None:
-        signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
+def on_load_main():
+    data = on_load()
+    if data is None:
+        return
+    time, signal, params, signal_type = data
 
-        for abbr, value in params.items():
-            if abbr in param_entries:
-                param_entries[abbr].delete(0, "end")
-                param_entries[abbr].insert(0, str(value))
+    signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
 
-        mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, len(time), signal_type)
+    for abbr, value in params.items():
+        if abbr in param_entries:
+            param_entries[abbr].delete(0, "end")
+            param_entries[abbr].insert(0, str(value))
 
-        params_text = (
-            f"Wartość średnia: {mean_value:.4f}\n"
-            f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
-            f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
-            f"Wariancja: {variance:.4f}\n"
-            f"Moc średnia: {mean_power:.4f}"
-        )
-        params_label.config(text=params_text)
+    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, len(time), signal_type)
 
-        if signal_type in ["S10", "S11"]:
-            plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type} - Sygnał")
-            plot_histogram(ax2, signal, f"Histogram wczytanego wykresu {signal_type}", 10)
-        else:
-            plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type}")
-            plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
-        canvas.draw()
+    params_text = (
+        f"Wartość średnia: {mean_value:.4f}\n"
+        f"Wartość średnia bezwzględna: {mean_abs_value:.4f}\n"
+        f"Wartość skuteczna (RMS): {rms_value:.4f}\n"
+        f"Wariancja: {variance:.4f}\n"
+        f"Moc średnia: {mean_power:.4f}"
+    )
+    params_label.config(text=params_text)
+
+    if signal_type in ["S10", "S11"]:
+        plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type} - Sygnał")
+        plot_histogram(ax2, signal, f"Histogram wczytanego wykresu {signal_type}", 10)
+    else:
+        plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type}")
+        plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
+    canvas.draw()
 
 def convert_signal(time, signal, conversion_type):
     conversion_params = {full_name: float(conversion_param_entries[full_name].get()) for full_name in conversion_param_entries}
@@ -296,39 +306,39 @@ def convert_signal(time, signal, conversion_type):
     else:
         raise ValueError(f"Nieznany typ konwersji: {conversion_type}")
 
-def open_new_window():
-    # Tworzymy nowe okno
-    new_window = Toplevel(root)
-    new_window.title("Nowe Okno - Sygnał po konwersji")
-
-    # Utwórz wykresy w nowym oknie
-    fig, ax1 = plt.subplots(figsize=(8, 6))
-    plt.subplots_adjust(hspace=0.4)
-
-    # Pobieramy dane z głównego okna
-    full_signal_name = signal_var.get()
-    signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
-
-    # Generujemy sygnał
-    time, signal, d = generate_signal(signal_type)
-
-    conversion_display_name = option_var.get()
-    conversion_type = [key for key, value in conversions.items() if value == conversion_display_name]
-    if not conversion_type:
-        raise ValueError(f"Nieprawidłowy typ konwersji: {conversion_display_name}")
-    conversion_type = conversion_type[0]
-
-    time, signal = convert_signal(time, signal, conversion_type)
-
-    # Rysowanie wykresu
-    plot_signal(ax1, time, signal, signal_type, f"Sygnał po konwersji: {conversion_type}")
-
-    # Wyświetlanie wykresów na nowym oknie
-    canvas_new = FigureCanvasTkAgg(fig, master=new_window)
-    canvas_new.get_tk_widget().pack(padx=20, pady=20)
-
-    # Rysowanie wykresu
-    canvas_new.draw()
+# def open_new_window():
+#     # Tworzymy nowe okno
+#     new_window = Toplevel(root)
+#     new_window.title("Nowe Okno - Sygnał po konwersji")
+#
+#     # Utwórz wykresy w nowym oknie
+#     fig, ax1 = plt.subplots(figsize=(8, 6))
+#     plt.subplots_adjust(hspace=0.4)
+#
+#     # Pobieramy dane z głównego okna
+#     full_signal_name = signal_var.get()
+#     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
+#
+#     # Generujemy sygnał
+#     time, signal, d = generate_signal(signal_type)
+#
+#     conversion_display_name = option_var.get()
+#     conversion_type = [key for key, value in conversions.items() if value == conversion_display_name]
+#     if not conversion_type:
+#         raise ValueError(f"Nieprawidłowy typ konwersji: {conversion_display_name}")
+#     conversion_type = conversion_type[0]
+#
+#     time, signal = convert_signal(time, signal, conversion_type)
+#
+#     # Rysowanie wykresu
+#     plot_signal(ax1, time, signal, signal_type, f"Sygnał po konwersji: {conversion_type}")
+#
+#     # Wyświetlanie wykresów na nowym oknie
+#     canvas_new = FigureCanvasTkAgg(fig, master=new_window)
+#     canvas_new.get_tk_widget().pack(padx=20, pady=20)
+#
+#     # Rysowanie wykresu
+#     canvas_new.draw()
 
 # Dodaj słownik na parametry konwersji (dla każdego okna osobno)
 conversion_param_entries_sample = {}
@@ -371,7 +381,7 @@ Label(frame_conversions, text="Wybierz opcję:").pack()
 option_combo = ttk.Combobox(frame_conversions, textvariable=option_var, values=list(conversions.values()), width=40)
 option_combo.pack()
 
-Button(frame_conversions, text="Wykonaj", font=("Arial", 12), command=open_new_window).pack(side="top", pady=10, padx=10)
+#Button(frame_conversions, text="Wykonaj", font=("Arial", 12), command=open_new_window).pack(side="top", pady=10, padx=10)
 
 frame_controls = Frame(root)
 frame_controls.pack(side="top", padx=13, pady=10)
@@ -404,7 +414,7 @@ params_label.pack(side="top", padx=10)
 
 # Przyciski Górne
 Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
-Button(frame_buttons, text="Wczytaj sygnał", command=on_load).pack(side="left", padx=5)
+Button(frame_buttons, text="Wczytaj sygnał", command=on_load_main).pack(side="left", padx=5)
 
 Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left", padx=(76,5))
 Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=5)

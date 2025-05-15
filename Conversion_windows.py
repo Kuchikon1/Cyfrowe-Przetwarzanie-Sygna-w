@@ -1,6 +1,4 @@
-import numpy as np
-from tkinter import Toplevel, Frame, Label, Entry, Button
-from Dictionary import conversions, conversion_param_abbreviations, conversions_params_map
+from tkinter import Toplevel, Frame, Button
 
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
@@ -26,12 +24,7 @@ def create_conversion_window(root, title, signal_var, option_var, conversion_par
     frame_buttons.pack(side="top", anchor="nw", padx=10, pady=10)
 
     def save_signal_window():
-        if not hasattr(new_window, "signal_data"):
-            from tkinter import messagebox
-            messagebox.showinfo("Brak danych", "Nie ma sygnału do zapisania. Najpierw wykonaj konwersję.")
-            return
-        time_s, signal_s, signal_type_s = new_window.signal_data
-        on_save(time_s, signal_s, signal_type_s)
+        pass
 
     def load_signal_window():
         data = on_load()
