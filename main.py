@@ -184,7 +184,8 @@ def update_plot():
     bins = int(bins_var.get())
 
     time, signal, d = generate_signal(signal_type)
-    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, d, signal_type)
+    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, d,
+                                                                                              signal_type)
 
     params_text = (
         f"Wartość średnia: {mean_value:.4f}\n"
@@ -237,7 +238,8 @@ def on_load_main():
             param_entries[abbr].delete(0, "end")
             param_entries[abbr].insert(0, str(value))
 
-    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, len(time), signal_type)
+    mean_value, mean_abs_value, rms_value, variance, mean_power = calculate_signal_parameters(time, signal, len(time),
+                                                                                              signal_type)
 
     params_text = (
         f"Wartość średnia: {mean_value:.4f}\n"
@@ -342,16 +344,23 @@ def on_load_main():
 #     canvas_new.draw()
 
 # Dodaj słownik na parametry konwersji (dla każdego okna osobno)
+
 conversion_param_entries_sample = {}
 
 def open_sampling_window():
-    create_conversion_window(root, "Próbkowanie sygnału", signal_var, conversion_param_entries_sample, on_save, on_load)
+    params = ["Częstotliwość próbkowania (f)"]
+    create_conversion_window(root, "Próbkowanie sygnału", signal_var, conversion_param_entries_sample, on_save,
+                             on_load, param_names=params)
 
 def open_quantization_window():
-    create_conversion_window(root, "Kwantyzacja sygnału", signal_var, conversion_param_entries_sample, on_save, on_load)
+    params = ["Liczba poziomów kwantyzacji (kw)"]
+    create_conversion_window(root, "Kwantyzacja sygnału", signal_var, conversion_param_entries_sample, on_save,
+                             on_load, param_names=params)
 
 def open_reconstruction_window():
-    create_conversion_window(root, "Rekonstrukcja sygnału", signal_var, conversion_param_entries_sample, on_save, on_load)
+    params = ["Liczba sąsiadów (nb)"]
+    create_conversion_window(root, "Rekonstrukcja sygnału", signal_var, conversion_param_entries_sample, on_save,
+                             on_load, param_names=params)
 
 # Tworzenie GUI
 root = Tk()

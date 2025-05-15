@@ -1,4 +1,4 @@
-from tkinter import Toplevel, Frame, Button
+from tkinter import Toplevel, Frame, Button, Label, Entry
 
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
@@ -15,10 +15,10 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.legend()
     ax.grid()
 
-def create_conversion_window(root, title, signal_var, conversion_param_entries, on_save, on_load):
+def create_conversion_window(root, title, signal_var, conversion_param_entries, on_save, on_load, param_names=[]):
     new_window = Toplevel(root)
     new_window.title(title)
-    new_window.geometry("1000x700")
+    new_window.geometry("1100x400")
 
     frame_buttons = Frame(new_window)
     frame_buttons.pack(side="top", anchor="nw", padx=10, pady=10)
@@ -50,7 +50,33 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
 
     # Lewa część - parametry konwersji
     frame_params = Frame(frame_main)
-    frame_params.pack(side="left", fill="y", padx=(0, 10))
+    frame_params.pack(side="left", fill="y")
+
+    # Tutaj tworzymy pola na parametry
+    label_width = 35
+    entry_width = 37
+
+    # Wyczyść słownik, by odświeżyć pola przy kolejnym otwarciu
+    conversion_param_entries.clear()
+
+    for param in param_names:
+        frame = Frame(frame_params)
+        frame.pack(anchor="w", pady=2)
+        Label(frame, text=param, width=label_width, anchor="w").pack(side="top", padx=(13,0))
+        entry = Entry(frame, width=entry_width)
+        entry.pack(side="left", padx=10)
+        conversion_param_entries[param] = entry
+
+    # Przycisk konwertuj pod parametrami
+    def on_convert():
+        # tutaj możesz podłączyć swoją funkcję konwersji,
+        # np. pobrać parametry i wykonać operację
+        params = {key: entry.get() for key, entry in conversion_param_entries.items()}
+        print("Parametry do konwersji:", params)
+        # dalej - logika konwersji, aktualizacja wykresu itp.
+
+    btn_convert = Button(frame_params, text="Konwertuj", command=on_convert)
+    btn_convert.pack(side="top", pady=15)
 
     # Prawa część - wykres
     frame_plot = Frame(frame_main)
