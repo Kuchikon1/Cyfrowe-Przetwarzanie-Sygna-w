@@ -6,6 +6,7 @@ import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
 from Dictionary import signal_map, param_entries, param_abbreviations, signal_params_map, conversions, conversion_param_entries, conversion_param_abbreviations, conversions_params_map
+from Conversion_windows import create_conversion_window
 
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
@@ -329,10 +330,17 @@ def open_new_window():
     # Rysowanie wykresu
     canvas_new.draw()
 
-def open_named_window(title):
-    new_window = Toplevel(root)
-    new_window.title(title)
-    Label(new_window, text=title, font=("Arial", 14)).pack(padx=20, pady=20)
+# Dodaj słownik na parametry konwersji (dla każdego okna osobno)
+conversion_param_entries_sample = {}
+
+def open_sampling_window():
+    create_conversion_window(root, "Próbkowanie sygnału", signal_var, option_var, conversion_param_entries_sample, on_save, on_load)
+
+def open_quantization_window():
+    create_conversion_window(root, "Kwantyzacja sygnału", signal_var, option_var, conversion_param_entries_sample, on_save, on_load)
+
+def open_reconstruction_window():
+    create_conversion_window(root, "Rekonstrukcja sygnału", signal_var, option_var, conversion_param_entries_sample, on_save, on_load)
 
 # Tworzenie GUI
 root = Tk()
@@ -403,9 +411,9 @@ Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
-Button(frame_buttons, text="Próbkowanie sygnału", command=lambda: open_named_window("Próbkowanie sygnału")).pack(side="left", padx=(275,5))
-Button(frame_buttons, text="Kwantyzacja sygnału", command=lambda: open_named_window("Kwantyzacja sygnału")).pack(side="left", padx=5)
-Button(frame_buttons, text="Rekonstrukcja sygnału", command=lambda: open_named_window("Rekonstrukcja sygnału")).pack(side="left", padx=5)
+Button(frame_buttons, text="Próbkowanie sygnału", command=open_sampling_window).pack(side="left", padx=(275,5))
+Button(frame_buttons, text="Kwantyzacja sygnału", command=open_quantization_window).pack(side="left", padx=5)
+Button(frame_buttons, text="Rekonstrukcja sygnału", command=open_reconstruction_window).pack(side="left", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
