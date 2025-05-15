@@ -259,20 +259,22 @@ def convert_signal(time, signal, conversion_type):
         signal_new = np.interp(time_new, time, signal)
         return time_new, signal_new
 
-    elif conversion_type == "Q1":  # Kwantyzacja równoramienna z obcięciem
-        kw = c_par["kw"]  # Liczba poziomów kwantyzacji
-        signal_min, signal_max = np.min(signal), np.max(signal)
-        levels = np.linspace(signal_min, signal_max, kw)
-        signal_new = np.digitize(signal, levels) - 1  # Przypisanie do poziomów
-        signal_new = levels[signal_new]
-        return time, signal_new
 
-    elif conversion_type == "Q2":  # Kwantyzacja równoramienna z zaokrągleniem
-        kw = c_par["kw"]
+    elif conversion_type in ["Q1", "Q2"]:  # Kwantyzacja
+        kw = int(c_par["kw"])
         signal_min, signal_max = np.min(signal), np.max(signal)
+        delta = (signal_max - signal_min) / (kw - 1)
         levels = np.linspace(signal_min, signal_max, kw)
-        signal_new = np.round(np.digitize(signal, levels) - 1)  # Zaokrąglenie
-        signal_new = levels[signal_new.astype(int)]
+
+        # Oblicz indeksy poziomów
+        if conversion_type == "Q1":  # obcięcie
+            indices = np.floor((signal - signal_min) / delta).astype(int)
+        else:  # Q2 - zaokrąglenie
+            indices = np.round((signal - signal_min) / delta).astype(int)
+
+        # Upewnij się, że indeksy mieszczą się w zakresie
+        indices = np.clip(indices, 0, kw - 1)
+        signal_new = levels[indices]
         return time, signal_new
 
     elif conversion_type == "R1":  # Ekstrapolacja zerowego rzędu
@@ -326,6 +328,11 @@ def open_new_window():
 
     # Rysowanie wykresu
     canvas_new.draw()
+
+def open_named_window(title):
+    new_window = Toplevel(root)
+    new_window.title(title)
+    Label(new_window, text=title, font=("Arial", 14)).pack(padx=20, pady=20)
 
 # Tworzenie GUI
 root = Tk()
@@ -395,6 +402,10 @@ Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left"
 Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=5)
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
+
+Button(frame_buttons, text="Próbkowanie sygnału", command=lambda: open_named_window("Próbkowanie sygnału")).pack(side="left", padx=(275,5))
+Button(frame_buttons, text="Kwantyzacja sygnału", command=lambda: open_named_window("Kwantyzacja sygnału")).pack(side="left", padx=5)
+Button(frame_buttons, text="Rekonstrukcja sygnału", command=lambda: open_named_window("Rekonstrukcja sygnału")).pack(side="left", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
