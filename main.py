@@ -347,20 +347,20 @@ def on_load_main():
 
 conversion_param_entries_sample = {}
 
-def open_sampling_window():
+def open_conversion_window():
     params = ["Częstotliwość próbkowania (f)"]
-    create_conversion_window(root, "Próbkowanie sygnału", signal_var, conversion_param_entries_sample, on_save,
+    create_conversion_window(root, "Konwersja sygnału", signal_var, conversion_param_entries_sample, on_save,
                              on_load, param_names=params)
 
-def open_quantization_window():
-    params = ["Liczba poziomów kwantyzacji (kw)"]
-    create_conversion_window(root, "Kwantyzacja sygnału", signal_var, conversion_param_entries_sample, on_save,
-                             on_load, param_names=params)
-
-def open_reconstruction_window():
-    params = ["Liczba sąsiadów (nb)"]
-    create_conversion_window(root, "Rekonstrukcja sygnału", signal_var, conversion_param_entries_sample, on_save,
-                             on_load, param_names=params)
+# def open_quantization_window():
+#     params = ["Liczba poziomów kwantyzacji (kw)"]
+#     create_conversion_window(root, "Kwantyzacja sygnału", signal_var, conversion_param_entries_sample, on_save,
+#                              on_load, param_names=params)
+#
+# def open_reconstruction_window():
+#     params = ["Liczba sąsiadów (nb)"]
+#     create_conversion_window(root, "Rekonstrukcja sygnału", signal_var, conversion_param_entries_sample, on_save,
+#                              on_load, param_names=params)
 
 # Tworzenie GUI
 root = Tk()
@@ -431,9 +431,10 @@ Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
-Button(frame_buttons, text="Próbkowanie", command=open_sampling_window).pack(side="left", padx=(125,5))
-Button(frame_buttons, text="Kwantyzacja", command=open_quantization_window).pack(side="left", padx=5)
-Button(frame_buttons, text="Rekonstrukcja", command=open_reconstruction_window).pack(side="left", padx=5)
+# Button(frame_buttons, text="Próbkowanie", command=open_conversion_window).pack(side="left", padx=(125,5))
+# Button(frame_buttons, text="Kwantyzacja", command=open_conversion_window).pack(side="left", padx=5)
+# Button(frame_buttons, text="Rekonstrukcja", command=open_conversion_window).pack(side="left", padx=5)
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="left", padx=(125,5))
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
