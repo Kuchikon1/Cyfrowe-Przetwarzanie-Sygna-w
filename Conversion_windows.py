@@ -328,12 +328,33 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
 
+
 def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.clear()
+
     if signal_type in ["S10", "S11"]:
         ax.scatter(time, signal, label="Sygnał", color='blue')
     else:
-        ax.plot(time, signal, label="Sygnał")
+        # Rysuj punkty dla próbkowania i kwantyzacji
+        if "Po próbkowaniu" in title or "Kwantyzacja" in title:
+            ax.scatter(time, signal, label="Sygnał", color='blue')
+
+            # Jeśli to kwantyzacja, dodaj poziome linie
+            if "Kwantyzacja" in title:
+                import re
+                # Wyciągnij L z tytułu
+                match = re.search(r"L=(\d+)", title)
+                if match:
+                    L = int(match.group(1))
+                    ymin = np.min(signal)
+                    ymax = np.max(signal)
+                    levels = np.linspace(ymin, ymax, L)
+                    for level in levels:
+                        ax.axhline(level, color='red', linestyle='--', alpha=0.5)
+
+        else:
+            ax.plot(time, signal, label="Sygnał")
+
     ax.set_xlabel("Czas [s]")
     ax.set_ylabel("Amplituda")
     ax.set_title(title)
