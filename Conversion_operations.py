@@ -6,7 +6,6 @@ def probkowanie_rownomierne(t, y, f):
     y_sampled = np.interp(t_sampled, t, y)
     return t_sampled, y_sampled
 
-
 def kwantyzacja_rownomierna_obciecie(y, L, ymin=None, ymax=None):
     if ymin is None: ymin = np.min(y)
     if ymax is None: ymax = np.max(y)
@@ -16,7 +15,6 @@ def kwantyzacja_rownomierna_obciecie(y, L, ymin=None, ymax=None):
     yq = np.clip(yq, ymin, ymax)  # obcięcie
 
     return yq
-
 
 def kwantyzacja_rownomierna_zaokraglanie(y, L, ymin=None, ymax=None):
     if ymin is None: ymin = np.min(y)
@@ -55,7 +53,6 @@ def rekonstrukcja_sinc(t_sampled, y_sampled, t):
             y_sampled[mask] * sinc(np.pi * diffs[mask] / Ts)
         )
     return y_reconstructed
-
 
 def mse(y, yq):
     return np.mean((y - yq) ** 2)

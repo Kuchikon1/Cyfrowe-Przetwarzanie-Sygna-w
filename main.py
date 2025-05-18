@@ -6,7 +6,6 @@ import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
 from Dictionary import (signal_map, param_entries, param_abbreviations, signal_params_map)
-#from Dictionary import (conversions, conversion_param_entries, conversion_param_abbreviations, conversions_params_map)
 
 from Conversion_windows import create_conversion_window
 
@@ -40,30 +39,6 @@ def update_param_fields(*args):
         entry = Entry(frame, width=entry_width, justify="left")
         entry.pack(fill="x")
         param_entries[full_param_name] = entry
-
-# def update_conversion_fields(*args):
-#     clean_widget(conversion_param_frame)
-#
-#     conversion_param_entries.clear()
-#
-#     conversion_type = [key for key, value in conversions.items() if value == option_var.get()]
-#     if not conversion_type:
-#         return
-#
-#     conversion_type = conversion_type[0]
-#     active_conversion_params = conversions_params_map.get(conversion_type, [])
-#
-#     label_width = 32
-#     entry_width = 32
-#
-#     for param in active_conversion_params:
-#         full_param_name = get_full_param_name(param, conversion_param_abbreviations)
-#         frame = Frame(conversion_param_frame)
-#         frame.pack(anchor="w")
-#         Label(frame, text=full_param_name, anchor="w", width=label_width).pack(fill="x")
-#         entry = Entry(frame, width=entry_width, justify="left")
-#         entry.pack(fill="x")
-#         conversion_param_entries[full_param_name] = entry
 
 def generate_signal(signal_type):
     params = {full_name: float(param_entries[full_name].get()) for full_name in param_entries}
@@ -100,7 +75,6 @@ def generate_signal(signal_type):
 
     return t, signal, d
 
-
 def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.clear()
     if signal_type in ["S10", "S11"]:
@@ -112,7 +86,6 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.set_title(title)
     ax.legend()
     ax.grid()
-
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.clear()
@@ -135,7 +108,6 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
     ax.set_title(title)
-
 
 def calculate_signal_parameters(t, signal, d, signal_type):
     if signal_type in ["S10", "S11"]:
@@ -177,7 +149,6 @@ def calculate_signal_parameters(t, signal, d, signal_type):
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
 
-
 def update_plot():
     full_signal_name = signal_var.get()
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
@@ -204,7 +175,6 @@ def update_plot():
         plot_histogram(ax2, signal, f"Histogram {signal_type}", bins)
     canvas.draw()
 
-
 def on_save():
     full_signal_name = signal_var.get()
     signal_type = next((key for key, value in signal_map.items() if value == full_signal_name), None)
@@ -217,7 +187,6 @@ def on_save():
     params = {abbr: float(entry.get()) for abbr, entry in param_entries.items()}
 
     fo.save_signal(time, signal, params, signal_type)
-
 
 def on_load():
     time, signal, params, signal_type = fo.load_signal()
@@ -258,109 +227,12 @@ def on_load_main():
         plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
     canvas.draw()
 
-# def convert_signal(time, signal, conversion_type):
-#     conversion_params = {full_name: float(conversion_param_entries[full_name].get()) for full_name in conversion_param_entries}
-#
-#     c_par = {}
-#     for full_c_param, value in conversion_params.items():
-#         abbreviation = conversion_param_abbreviations.get(full_c_param, full_c_param)
-#         c_par[abbreviation] = value
-#
-#     if conversion_type == "S":
-#         f = c_par["f"]  # Częstotliwość próbkowania
-#         dt = 1 / f
-#         time_new = np.arange(time[0], time[-1], dt)
-#         signal_new = np.interp(time_new, time, signal)
-#         return time_new, signal_new
-#
-#
-#     elif conversion_type in ["Q1", "Q2"]:  # Kwantyzacja
-#         kw = int(c_par["kw"])
-#         signal_min, signal_max = np.min(signal), np.max(signal)
-#         delta = (signal_max - signal_min) / (kw - 1)
-#         levels = np.linspace(signal_min, signal_max, kw)
-#
-#         # Oblicz indeksy poziomów
-#         if conversion_type == "Q1":  # obcięcie
-#             indices = np.floor((signal - signal_min) / delta).astype(int)
-#         else:  # Q2 - zaokrąglenie
-#             indices = np.round((signal - signal_min) / delta).astype(int)
-#
-#         # Upewnij się, że indeksy mieszczą się w zakresie
-#         indices = np.clip(indices, 0, kw - 1)
-#         signal_new = levels[indices]
-#         return time, signal_new
-#
-#     elif conversion_type == "R1":  # Ekstrapolacja zerowego rzędu
-#         nb = c_par["nb"]  # Liczba sąsiadów
-#         signal_new = np.interp(time, time[:nb], signal[:nb])
-#         return time, signal_new
-#
-#     elif conversion_type == "R2":  # Interpolacja pierwszego rzędu
-#         nb = c_par["nb"]
-#         signal_new = np.interp(time, time[:nb], signal[:nb])
-#         return time, signal_new
-#
-#     elif conversion_type == "R3":  # Rekonstrukcja w oparciu o funkcję sinc
-#         nb = c_par["nb"]
-#         signal_new = np.interp(time, time[:nb], signal[:nb])  # Użycie interpolacji jako prosty przykład
-#         return time, signal_new
-#
-#     else:
-#         raise ValueError(f"Nieznany typ konwersji: {conversion_type}")
-
-# def open_new_window():
-#     # Tworzymy nowe okno
-#     new_window = Toplevel(root)
-#     new_window.title("Nowe Okno - Sygnał po konwersji")
-#
-#     # Utwórz wykresy w nowym oknie
-#     fig, ax1 = plt.subplots(figsize=(8, 6))
-#     plt.subplots_adjust(hspace=0.4)
-#
-#     # Pobieramy dane z głównego okna
-#     full_signal_name = signal_var.get()
-#     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
-#
-#     # Generujemy sygnał
-#     time, signal, d = generate_signal(signal_type)
-#
-#     conversion_display_name = option_var.get()
-#     conversion_type = [key for key, value in conversions.items() if value == conversion_display_name]
-#     if not conversion_type:
-#         raise ValueError(f"Nieprawidłowy typ konwersji: {conversion_display_name}")
-#     conversion_type = conversion_type[0]
-#
-#     time, signal = convert_signal(time, signal, conversion_type)
-#
-#     # Rysowanie wykresu
-#     plot_signal(ax1, time, signal, signal_type, f"Sygnał po konwersji: {conversion_type}")
-#
-#     # Wyświetlanie wykresów na nowym oknie
-#     canvas_new = FigureCanvasTkAgg(fig, master=new_window)
-#     canvas_new.get_tk_widget().pack(padx=20, pady=20)
-#
-#     # Rysowanie wykresu
-#     canvas_new.draw()
-
-# Dodaj słownik na parametry konwersji (dla każdego okna osobno)
-
 conversion_param_entries_sample = {}
 
 def open_conversion_window():
     params = ["Częstotliwość próbkowania (f)"]
     create_conversion_window(root, "Konwersja sygnału", signal_var, conversion_param_entries_sample, on_save,
                              on_load, param_names=params)
-
-# def open_quantization_window():
-#     params = ["Liczba poziomów kwantyzacji (kw)"]
-#     create_conversion_window(root, "Kwantyzacja sygnału", signal_var, conversion_param_entries_sample, on_save,
-#                              on_load, param_names=params)
-#
-# def open_reconstruction_window():
-#     params = ["Liczba sąsiadów (nb)"]
-#     create_conversion_window(root, "Rekonstrukcja sygnału", signal_var, conversion_param_entries_sample, on_save,
-#                              on_load, param_names=params)
 
 # Tworzenie GUI
 root = Tk()
@@ -376,22 +248,6 @@ frame_right_container.pack(side="right", fill="both", expand=True, padx=10, pady
 # Ramka z wykresami
 frame_plot = Frame(frame_right_container)
 frame_plot.pack(side="left", anchor="n")
-
-# # Pusta przestrzeń po prawej – przyszłe elementy GUI będą tu
-# frame_conversions = Frame(frame_right_container, width=300, bg="#f0f0f0")
-# frame_conversions.pack(side="top", fill="y", padx=10)
-#
-# conversion_param_frame = Frame(frame_right_container)
-# conversion_param_frame.pack(padx=0, pady=0)
-#
-# # Zmienna do przechowywania wyboru
-# option_var = StringVar(value="")
-# option_var.trace("w", update_conversion_fields)
-# Label(frame_conversions, text="Wybierz opcję:").pack()
-# option_combo = ttk.Combobox(frame_conversions, textvariable=option_var, values=list(conversions.values()), width=40)
-# option_combo.pack()
-
-#Button(frame_conversions, text="Wykonaj", font=("Arial", 12), command=open_new_window).pack(side="top", pady=10, padx=10)
 
 frame_controls = Frame(root)
 frame_controls.pack(side="top", padx=13, pady=10)
@@ -431,10 +287,7 @@ Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
-# Button(frame_buttons, text="Próbkowanie", command=open_conversion_window).pack(side="left", padx=(125,5))
-# Button(frame_buttons, text="Kwantyzacja", command=open_conversion_window).pack(side="left", padx=5)
-# Button(frame_buttons, text="Rekonstrukcja", command=open_conversion_window).pack(side="left", padx=5)
-Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=5)
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(320, 0))
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))

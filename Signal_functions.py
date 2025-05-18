@@ -15,13 +15,11 @@ def szum_gaussowski(A, t1, d):
     y = np.random.normal(size=N) * A
     return t, y, d, t1
 
-
 def sygnal_sinusoidalny(A, T, t1, d):
     t = np.linspace(t1, t1 + d, N)
     y = A * np.sin(2 * np.pi * (t - t1) / T)
 
     return t, y, d, t1
-
 
 def sygnal_sinusoidalny_wyprosotowany_jednopolowkowo(A, T, t1, d):
     t = np.linspace(t1, t1 + d, N)
@@ -29,13 +27,11 @@ def sygnal_sinusoidalny_wyprosotowany_jednopolowkowo(A, T, t1, d):
 
     return t, y, d, t1
 
-
 def sygnal_sinusoidalny_wyprosotowany_dwupolowkowo(A, T, t1, d):
     t = np.linspace(t1, t1 + d, N)
     y = np.abs(A * np.sin(2 * np.pi * (t - t1) / T))
 
     return t, y, d, t1
-
 
 def sygnal_prostokatny(A, T, t1, d, kw):
     t = np.linspace(t1, t1 + d, N)
@@ -52,7 +48,6 @@ def sygnal_prostokatny(A, T, t1, d, kw):
                 y[i] = A
 
     return t, y, d, t1
-
 
 def sygnal_prostokatny_symetryczny(A, T, t1, d, kw):
     t = np.linspace(t1, t1 + d, N)
@@ -74,7 +69,6 @@ def sygnal_prostokatny_symetryczny(A, T, t1, d, kw):
 
     return t, y, d, t1
 
-
 def sygnal_trojkatny(A, T, t1, d, kw):
     t = np.linspace(t1, t1 + d, N)
     y = np.ones_like(t)
@@ -95,14 +89,12 @@ def sygnal_trojkatny(A, T, t1, d, kw):
 
     return t, y, d, t1
 
-
 def skok_jednostkowy(A, t1, d, ts):
     t = np.linspace(t1, t1 + d, N)
     y = np.zeros_like(t)
 
     y[t >= ts] = A
     return t, y, d, t1
-
 
 def impuls_jednostkowy(A, ns, n1, d, f):
     t = np.arange(n1, d, f)
@@ -111,7 +103,6 @@ def impuls_jednostkowy(A, ns, n1, d, f):
     y[int(ns - n1)] = A
 
     return t, y, d
-
 
 def szum_impulsowy(A, t1, d, f, p):
     t = np.arange(t1, t1 + d, f)
