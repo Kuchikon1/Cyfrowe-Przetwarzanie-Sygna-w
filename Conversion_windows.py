@@ -478,7 +478,7 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
                 return
             t_sampled = time
             y_sampled = signal
-            t_full = np.arange(t_sampled[0], t_sampled[-1], 1.0 / value)
+            t_full = np.linspace(t_sampled[0], t_sampled[-1], int((t_sampled[-1] - t_sampled[0]) * value) + 1)
             method = reconstruction_method.get()
             if method == "zerowy rząd":
                 y_rec = co.rekonstrukcja_zerowego_rzedu(t_sampled, y_sampled, t_full)

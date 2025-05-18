@@ -434,7 +434,7 @@ Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="
 # Button(frame_buttons, text="Próbkowanie", command=open_conversion_window).pack(side="left", padx=(125,5))
 # Button(frame_buttons, text="Kwantyzacja", command=open_conversion_window).pack(side="left", padx=5)
 # Button(frame_buttons, text="Rekonstrukcja", command=open_conversion_window).pack(side="left", padx=5)
-Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="left", padx=(125,5))
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))

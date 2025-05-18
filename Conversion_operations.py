@@ -47,9 +47,15 @@ def sinc(x):
 def rekonstrukcja_sinc(t_sampled, y_sampled, t):
     Ts = t_sampled[1] - t_sampled[0]
     y_reconstructed = np.zeros_like(t)
+    window = 20  # liczba najbliższych próbek do rekonstrukcji
     for i in range(len(t)):
-        y_reconstructed[i] = np.sum(y_sampled * sinc(np.pi * (t[i] - t_sampled) / Ts))
+        diffs = t[i] - t_sampled
+        mask = np.abs(diffs) < window * Ts
+        y_reconstructed[i] = np.sum(
+            y_sampled[mask] * sinc(np.pi * diffs[mask] / Ts)
+        )
     return y_reconstructed
+
 
 def mse(y, yq):
     return np.mean((y - yq) ** 2)
