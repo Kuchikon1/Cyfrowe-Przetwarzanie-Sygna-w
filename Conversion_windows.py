@@ -174,22 +174,38 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
             label = f"Kwantyzacja ({'zaokrąglanie' if is_rounding.get() else 'obcinanie'}, L={L})"
             new_data = (time, yq, signal_type)
 
+
         elif conversion_type.get() == "Rekonstrukcja":
+
             if value <= 0:
                 print("Częstotliwość musi być > 0.")
+
                 return
-            t_sampled = time
-            y_sampled = signal
-            t_full = new_window.original_data[0]
+
+            # Użyj próbkowanego sygnału
+
+            t_sampled, y_sampled, _ = new_window.signal_data
+
+            t_full = new_window.original_data[0]  # pełna oś czasu do rekonstrukcji
+
             method = reconstruction_method.get()
+
             if method == "zerowy rząd":
+
                 y_rec = co.rekonstrukcja_zerowego_rzedu(t_sampled, y_sampled, t_full)
+
             elif method == "pierwszy rząd":
+
                 y_rec = co.rekonstrukcja_pierwszego_rzedu(t_sampled, y_sampled, t_full)
+
             else:
+
                 y_rec = co.rekonstrukcja_sinc(t_sampled, y_sampled, t_full)
+
             label = f"Rekonstrukcja ({method}, {value} Hz)"
+
             new_data = (t_full, y_rec, signal_type)
+
         else:
             print("Nieznana operacja.")
             return
