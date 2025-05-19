@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 def probkowanie_rownomierne(t, y, f):
@@ -37,16 +39,30 @@ def rekonstrukcja_pierwszego_rzedu(t_sampled, y_sampled, t):
     y_foh = np.interp(t, t_sampled, y_sampled)
     return t_foh, y_foh
 
+def sinc(x):
+    y = np.empty_like(x, dtype=float)
+    for i, val in np.ndenumerate(x):
+        if val == 0:
+            y[i] = 1.0
+        else:
+            y[i] = math.sin(math.pi * val) / (math.pi * val)
+    return y
+
 def rekonstrukcja_sinc(t_sampled, y_sampled, t, neighbors):
     y_reconstructed = np.zeros_like(t)
     Ts = np.mean(np.diff(t_sampled))
-    print(Ts)
+
+    N = len(t_sampled)
+    total_neighbors = int(2 * neighbors + 1)
+    if total_neighbors > N:
+        total_neighbors = N
 
     for i, ti in enumerate(t):
         diffs = np.abs(t_sampled - ti)
-        neighbor_indices = np.argsort(diffs)[:int(2 * neighbors + 1)]
+        neighbor_indices = np.argsort(diffs)[:total_neighbors]
         sinc_args = (ti - t_sampled[neighbor_indices]) / Ts
-        y_reconstructed[i] = np.sum(y_sampled[neighbor_indices] * np.sinc(sinc_args))
+        y_reconstructed[i] = np.sum(y_sampled[neighbor_indices] * sinc(sinc_args))
+
     return t, y_reconstructed
 
 def mse(y, yq):

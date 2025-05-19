@@ -188,6 +188,7 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
             elif method == "pierwszy rząd":
                 t_rec, y_rec = co.rekonstrukcja_pierwszego_rzedu(t_sampled, y_sampled, t_full)
             else:
+                t_full = np.linspace(t_sampled[0], t_sampled[-1], 1000)
                 t_rec, y_rec = co.rekonstrukcja_sinc(t_sampled, y_sampled, t_full, value)
             if method == "sinc":
                 label = f"Rekonstrukcja ({method}, ilość sąsiadów: {value})"
