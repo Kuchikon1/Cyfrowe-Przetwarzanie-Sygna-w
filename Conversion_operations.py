@@ -27,29 +27,27 @@ def kwantyzacja_rownomierna_zaokraglanie(y, L, ymin=None, ymax=None):
     return yq
 
 def rekonstrukcja_zerowego_rzedu(t_sampled, y_sampled, t):
-    t_shifted = t_sampled + 1e-10  # uniknięcie konfliktów dokładności
-    return np.interp(t, t_shifted, y_sampled, left=y_sampled[0], right=y_sampled[-1])
-
+    t_zoh = np.repeat(t_sampled, 2)[1:]
+    t_zoh = np.append(t_zoh, t[-1])
+    y_zoh = np.repeat(y_sampled, 2)
+    return t_zoh, y_zoh
 
 def rekonstrukcja_pierwszego_rzedu(t_sampled, y_sampled, t):
-    y_reconstructed = np.interp(t, t_sampled, y_sampled)
-    return y_reconstructed
+    t_foh = t_sampled
+    y_foh = np.interp(t, t_sampled, y_sampled)
+    return t_foh, y_foh
 
-def sinc(x):
-    return np.sinc(x / np.pi)
-
-def rekonstrukcja_sinc(t_sampled, y_sampled, t):
-    Ts = t_sampled[1] - t_sampled[0]
+def rekonstrukcja_sinc(t_sampled, y_sampled, t, neighbors):
     y_reconstructed = np.zeros_like(t)
-    for i in range(len(t)):
-        # Weź tylko próbki w oknie ±N*Ts
-        diffs = t[i] - t_sampled
-        mask = np.abs(diffs) < 10 * Ts  # np. 10 próbek w każdą stronę
-        if np.any(mask):
-            sinc_vals = np.sinc(diffs[mask] / Ts)
-            y_reconstructed[i] = np.sum(y_sampled[mask] * sinc_vals)
-    return y_reconstructed
+    Ts = np.mean(np.diff(t_sampled))
+    print(Ts)
 
+    for i, ti in enumerate(t):
+        diffs = np.abs(t_sampled - ti)
+        neighbor_indices = np.argsort(diffs)[:int(2 * neighbors + 1)]
+        sinc_args = (ti - t_sampled[neighbor_indices]) / Ts
+        y_reconstructed[i] = np.sum(y_sampled[neighbor_indices] * np.sinc(sinc_args))
+    return t, y_reconstructed
 
 def mse(y, yq):
     return np.mean((y - yq) ** 2)

@@ -126,7 +126,7 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
             param_frames["param1"].pack(anchor="w", pady=2)
             check_kwantyzacja.pack(pady=(5, 5))
         elif selected == "Rekonstrukcja":
-            param_labels[0].set("Częstotliwość próbkowania [Hz]:")
+            param_labels[0].set("Ilość sąsiadów [nb]:")
             param_frames["param1"].pack(anchor="w", pady=2)
             frame_reconstruction_dropdown.pack(pady=(5, 5))
 
@@ -176,36 +176,24 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
 
 
         elif conversion_type.get() == "Rekonstrukcja":
-
             if value <= 0:
-                print("Częstotliwość musi być > 0.")
-
+                print("Ilość sąsiadów musi być > 0.")
                 return
-
             # Użyj próbkowanego sygnału
-
             t_sampled, y_sampled, _ = new_window.signal_data
-
-            t_full = new_window.original_data[0]  # pełna oś czasu do rekonstrukcji
-
+            t_full = new_window.original_data[0]
             method = reconstruction_method.get()
-
             if method == "zerowy rząd":
-
-                y_rec = co.rekonstrukcja_zerowego_rzedu(t_sampled, y_sampled, t_full)
-
+                t_rec, y_rec = co.rekonstrukcja_zerowego_rzedu(t_sampled, y_sampled, t_full)
             elif method == "pierwszy rząd":
-
-                y_rec = co.rekonstrukcja_pierwszego_rzedu(t_sampled, y_sampled, t_full)
-
+                t_rec, y_rec = co.rekonstrukcja_pierwszego_rzedu(t_sampled, y_sampled, t_full)
             else:
-
-                y_rec = co.rekonstrukcja_sinc(t_sampled, y_sampled, t_full)
-
-            label = f"Rekonstrukcja ({method}, {value} Hz)"
-
-            new_data = (t_full, y_rec, signal_type)
-
+                t_rec, y_rec = co.rekonstrukcja_sinc(t_sampled, y_sampled, t_full, value)
+            if method == "sinc":
+                label = f"Rekonstrukcja ({method}, ilość sąsiadów: {value})"
+            else:
+                label = f"Rekonstrukcja ({method})"
+            new_data = (t_rec, y_rec, signal_type)
         else:
             print("Nieznana operacja.")
             return
@@ -229,8 +217,6 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
                     print("Obliczono miary błędów:")
                     print(error_text)
                     error_metrics_label.config(text=error_text)
-                else:
-                    error_metrics_label.config(text="Błąd: długości sygnałów się nie zgadzają.")
             else:
                 error_metrics_label.config(text="Brak danych odniesienia do obliczeń.")
         else:
