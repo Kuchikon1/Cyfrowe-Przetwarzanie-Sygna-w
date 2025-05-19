@@ -126,11 +126,22 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
             param_frames["param1"].pack(anchor="w", pady=2)
             check_kwantyzacja.pack(pady=(5, 5))
         elif selected == "Rekonstrukcja":
+            frame_reconstruction_dropdown.pack(pady=(5, 5))
+            update_neighbors_visibility()
+
+    def update_neighbors_visibility(*args):
+        if reconstruction_method.get() == "sinc" and conversion_type.get() == "Rekonstrukcja":
             param_labels[0].set("Ilość sąsiadów [nb]:")
             param_frames["param1"].pack(anchor="w", pady=2)
-            frame_reconstruction_dropdown.pack(pady=(5, 5))
+            entry1.config(state='normal')
+        else:
+            param_labels[0].set("")
+            entry1.delete(0, 'end')
+            entry1.config(state='disabled')
+            param_frames["param1"].pack(anchor="w", pady=2)
 
     conversion_type.trace_add("write", update_visibility)
+    reconstruction_method.trace_add("write", update_neighbors_visibility)
     OptionMenu(frame_params, conversion_type, "Próbkowanie", "Kwantyzacja", "Rekonstrukcja").pack()
 
     # === Etykieta do wyświetlania metryk błędów ===
@@ -179,7 +190,6 @@ def create_conversion_window(root, title, signal_var, conversion_param_entries, 
             if value <= 0:
                 print("Ilość sąsiadów musi być > 0.")
                 return
-            # Użyj próbkowanego sygnału
             t_sampled, y_sampled, _ = new_window.signal_data
             t_full = new_window.original_data[0]
             method = reconstruction_method.get()
