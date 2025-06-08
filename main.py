@@ -6,6 +6,7 @@ import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
 from Dictionary import (signal_map, param_entries, param_abbreviations, signal_params_map)
+from filters import set_last_signal, convolution_on_last_signal, radar_on_last_signal
 
 from Conversion_windows import create_conversion_window
 
@@ -201,6 +202,7 @@ def on_load_main():
     time, signal, params, signal_type = data
 
     signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
+    set_last_signal(time, signal, signal_type)
 
     for abbr, value in params.items():
         if abbr in param_entries:
@@ -287,7 +289,9 @@ Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
-Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(320, 0))
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(200, 0))
+Button(frame_buttons, text="Splot sygnału", command=convolution_on_last_signal).pack(side="left", padx=5)
+Button(frame_buttons, text="Symulacja radaru", command=radar_on_last_signal).pack(side="left", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
