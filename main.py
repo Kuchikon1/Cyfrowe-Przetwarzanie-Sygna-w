@@ -6,7 +6,7 @@ import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
 from Dictionary import (signal_map, param_entries, param_abbreviations, signal_params_map)
-from filters import set_last_signal, convolution_on_last_signal, radar_on_last_signal
+import filters as fil
 
 from Conversion_windows import create_conversion_window
 
@@ -150,6 +150,24 @@ def calculate_signal_parameters(t, signal, d, signal_type):
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
 
+
+def set_current_as_last_signal():
+    global last_signal
+    full_signal_name = signal_var.get()
+    signal_type = next((key for key, value in signal_map.items() if value == full_signal_name), None)
+
+    if not signal_type:
+        print(f"Błąd: Nieznany sygnał '{full_signal_name}'")
+        return
+
+    try:
+        time, signal, d = generate_signal(signal_type)
+        last_signal = signal
+        print("Zaktualizowano last_signal.")
+    except Exception as e:
+        print(f"Błąd podczas ustawiania last_signal: {e}")
+
+
 def update_plot():
     full_signal_name = signal_var.get()
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
@@ -195,6 +213,31 @@ def on_load():
         return None
     return time, signal, params, signal_type
 
+
+def on_convolve():
+    time1, signal1, params1, signal_type1 = fo.load_signal()
+    time2, signal2, params2, signal_type2 = fo.load_signal()
+
+    if time1 is not None and time2 is not None:
+        # Oblicz splot
+        y = fil.convolve(signal1, signal2)
+
+        # Ustal krok czasowy z obu sygnałów (najmniejszy, dla większej precyzji)
+        dt1 = time1[1] - time1[0] if len(time1) > 1 else 1
+        dt2 = time2[1] - time2[0] if len(time2) > 1 else 1
+        dt = min(dt1, dt2)
+
+        # Utwórz nową oś czasu dla wyniku
+        t_y = np.arange(0, len(y)) * dt
+
+        # Kopiuj parametry pierwszego sygnału jako bazowe dla wyniku
+        params_result = params1.copy()
+
+        # Zapisz i wyświetl wynik
+        fo.save_signal(t_y, y, params_result, "Splot")
+        so.update_plot_after_operation(t_y, y, params_result, "Splot")
+
+
 def on_load_main():
     data = on_load()
     if data is None:
@@ -202,7 +245,7 @@ def on_load_main():
     time, signal, params, signal_type = data
 
     signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
-    set_last_signal(time, signal, signal_type)
+    fil.set_last_signal(time, signal, signal_type)
 
     for abbr, value in params.items():
         if abbr in param_entries:
@@ -290,8 +333,9 @@ Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(sid
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
 Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(200, 0))
-Button(frame_buttons, text="Splot sygnału", command=convolution_on_last_signal).pack(side="left", padx=5)
-Button(frame_buttons, text="Symulacja radaru", command=radar_on_last_signal).pack(side="left", padx=5)
+Button(frame_buttons, text="Splot sygnału", command=fil.convolution_on_last_signal).pack(side="left", padx=5)
+Button(frame_buttons, text="Symulacja radaru", command=fil.radar_on_last_signal).pack(side="left", padx=5)
+Button(frame_buttons, text="Splot 2 sygnałów", command=on_convolve).pack(pady=10)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))

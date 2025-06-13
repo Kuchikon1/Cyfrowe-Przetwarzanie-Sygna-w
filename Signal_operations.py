@@ -58,3 +58,4 @@ def update_plot_after_operation(time, result_signal, params, operation_type):
     main.plot_signal(main.ax1, time, result_signal, signal_type)
     main.plot_histogram(main.ax2, result_signal, f"Histogram {operation_type}")
     main.canvas.draw()
+

@@ -28,6 +28,49 @@ def convolve(x, h):
                 y[n] += h[k] * x[n - k]
     return y
 
+def convolution_from_files():
+    file_path1 = filedialog.askopenfilename(filetypes=[("Pliki Pickle", "*.pkl")], title="Wybierz pierwszy plik")
+    if not file_path1:
+        print("Nie wybrano pierwszego pliku.")
+        return
+
+    file_path2 = filedialog.askopenfilename(filetypes=[("Pliki Pickle", "*.pkl")], title="Wybierz drugi plik")
+    if not file_path2:
+        print("Nie wybrano drugiego pliku.")
+        return
+
+    try:
+        with open(file_path1, 'rb') as f1, open(file_path2, 'rb') as f2:
+            time1, signal1, _, _ = pickle.load(f1)
+            time2, signal2, _, _ = pickle.load(f2)
+    except Exception as e:
+        print(f"Błąd podczas ładowania plików: {e}")
+        return
+
+    y = convolve(signal1, signal2)
+
+    dt1 = time1[1] - time1[0] if len(time1) > 1 else 1
+    dt2 = time2[1] - time2[0] if len(time2) > 1 else 1
+    dt = min(dt1, dt2)
+    t_y = np.arange(0, len(y)) * dt
+
+    plt.figure(figsize=(10, 7))
+
+    plt.subplot(3, 1, 1)
+    plt.plot(time1, signal1)
+    plt.title("Sygnał 1")
+
+    plt.subplot(3, 1, 2)
+    plt.plot(time2, signal2)
+    plt.title("Sygnał 2")
+
+    plt.subplot(3, 1, 3)
+    plt.plot(t_y, y)
+    plt.title("Splot sygnałów")
+
+    plt.tight_layout()
+    plt.show()
+
 def convolution_on_last_signal():
     global last_signal
     if last_signal is None:
