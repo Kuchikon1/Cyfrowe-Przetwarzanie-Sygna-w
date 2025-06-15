@@ -327,12 +327,6 @@ def on_load_main():
     canvas.draw()
 
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import filters as fil
-import File_operations as fo
-import Signal_operations as so
-
 def open_filter_dialog():
     def apply_filter_action():
         try:
@@ -371,7 +365,7 @@ def open_filter_dialog():
         except Exception as e:
             messagebox.showerror("Błąd", f"Nieprawidłowe dane: {e}")
 
-    dialog = tk.Toplevel()
+    dialog = Toplevel()
     dialog.title("Parametry filtra")
 
     ttk.Label(dialog, text="Długość filtra (M):").grid(row=0, column=0, padx=10, pady=5)
@@ -383,13 +377,13 @@ def open_filter_dialog():
     entry_K.grid(row=1, column=1)
 
     ttk.Label(dialog, text="Typ pasma:").grid(row=2, column=0, padx=10, pady=5)
-    band_var = tk.StringVar()
+    band_var = StringVar()
     band_dropdown = ttk.Combobox(dialog, textvariable=band_var, values=["Low", "High"], state="readonly")
     band_dropdown.grid(row=2, column=1)
     band_dropdown.current(0)
 
     ttk.Label(dialog, text="Typ okna:").grid(row=3, column=0, padx=10, pady=5)
-    window_var = tk.StringVar()
+    window_var = StringVar()
     window_dropdown = ttk.Combobox(dialog, textvariable=window_var, values=["Hamming", "Rectangular", "Hanning", "Blackman"], state="readonly")
     window_dropdown.grid(row=3, column=1)
     window_dropdown.current(0)
