@@ -295,7 +295,7 @@ def open_filter_dialog():
             window_fn = window_functions.get(window_type, window_functions)
 
             # Stwórz filtr i zastosuj go
-            h = fil.design_filter(M, K, window_fn=window_fn, band=band.lower())
+            h = fil.design_filter(M, K, window_fn, band)
             filtered = fil.apply_filter(signal, h)
 
             # Zapisz i pokaż
@@ -303,7 +303,6 @@ def open_filter_dialog():
             new_time = np.arange(0, len(filtered)) * dt
             new_params = params.copy()
             fo.save_signal(new_time, filtered, new_params, f"Filtr {band} ({window_type})")
-
 
             dialog.destroy()
 

@@ -1,14 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
-# Globalne zmienne do przechowywania sygnału
-last_signal = None
-last_time = None
-last_type = None
-
-# ==============================================
-# CZESC 1: SPLOT DYSKRETNY
-# ==============================================
 def convolve(x, h):
     N = len(x)
     M = len(h)
@@ -18,32 +9,6 @@ def convolve(x, h):
             if 0 <= n - k < N:
                 y[n] += h[k] * x[n - k]
     return y
-
-def convolution_on_last_signal():
-    global last_signal
-    if last_signal is None:
-        print("Brak sygnału do przetworzenia.")
-        return
-
-    h = np.ones(5) / 5  # filtr uśredniający
-    y = convolve(last_signal, h)
-
-    plt.figure(figsize=(10, 6))
-    plt.subplot(3, 1, 1)
-    plt.plot(last_signal)
-    plt.title("Oryginalny sygnał")
-    plt.subplot(3, 1, 2)
-    plt.stem(h)
-    plt.title("Filtr h[n]")
-    plt.subplot(3, 1, 3)
-    plt.plot(y)
-    plt.title("Splot sygnału z filtrem")
-    plt.tight_layout()
-    plt.show()
-
-# ==============================================
-# CZESC 2: FILTRACJA (pozostaje bez zmian)
-# ==============================================
 
 def hamming_window(M):
     return 0.53836 - 0.46164 * np.cos(2 * np.pi * np.arange(M) / (M - 1))
@@ -68,16 +33,12 @@ def design_filter(M, K, window_fn, band):
     h = ideal_lowpass_response(M, K)
     window = window_fn(M)
     h *= window
-    if band == 'high':
+    if band == 'High':
         h *= (-1) ** np.arange(M)
     return h
 
 def apply_filter(x, h):
     return convolve(x, h)
-
-# ==============================================
-# CZESC 3: KORELACJA I SYMULACJA RADARU
-# ==============================================
 
 def correlate_signals(x, y):
     y_rev = y[::-1]
