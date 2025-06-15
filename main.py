@@ -393,8 +393,6 @@ def open_filter_dialog():
 
     dialog.grab_set()
 
-
-
 conversion_param_entries_sample = {}
 
 def open_conversion_window():
@@ -447,20 +445,19 @@ params_label = Label(frame_bottom, text="Wartość średnia: 0.0000\n"
 params_label.pack(side="top", padx=10)
 
 # Przyciski Górne
-Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=5)
-Button(frame_buttons, text="Wczytaj sygnał", command=on_load_main).pack(side="left", padx=5)
+Button(frame_buttons, text="Zapisz sygnał", command=on_save).pack(side="left", padx=3)
+Button(frame_buttons, text="Wczytaj sygnał", command=on_load_main).pack(side="left", padx=3)
 
-Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left", padx=(76,5))
-Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=5)
-Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=5)
-Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
+Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left", padx=(84,3))
+Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=3)
+Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=3)
+Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=3)
 
-Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(200, 0))
-#Button(frame_buttons, text="Splot sygnału", command=fil.convolution_on_last_signal).pack(side="left", padx=5)
-Button(frame_buttons, text="Symulacja radaru", command=fil.radar_on_last_signal).pack(side="left", padx=5)
-Button(frame_buttons, text="Splot", command=on_convolve).pack(side="left", padx=5)
-Button(frame_buttons, text="Korelacja", command=on_correlate).pack(side="left", padx=5)
-Button(frame_buttons, text="Filtracja", command=open_filter_dialog).pack(side="left", padx=5)
+Button(frame_buttons, text="Splot", command=on_convolve).pack(side="left", padx=(90,3))
+Button(frame_buttons, text="Korelacja", command=on_correlate).pack(side="left", padx=3)
+Button(frame_buttons, text="Filtracja", command=open_filter_dialog).pack(side="left", padx=3)
+
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(90, 0))
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))

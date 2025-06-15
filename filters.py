@@ -1,14 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import tkinter as tk
-from tkinter import ttk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-# Do integracji z projektem (zaimportuj funkcje GUI)
-import File_operations as fo
-import Signal_operations as so
-import Signal_functions as sf
-from Dictionary import signal_map, signal_params_map, param_abbreviations, param_entries
 
 # Globalne zmienne do przechowywania sygnału
 last_signal = None
@@ -91,10 +82,6 @@ def apply_filter(x, h):
 # CZESC 3: KORELACJA I SYMULACJA RADARU
 # ==============================================
 
-# def correlate_via_convolution(x, h):
-#     h_rev = h[::-1]
-#     return convolve(x, h_rev)
-
 def correlate_signals(x, y):
     y_rev = y[::-1]
     return convolve(x, y_rev)
@@ -133,21 +120,8 @@ def radar_on_last_signal():
     plt.tight_layout()
     plt.show()
 
-# ==============================================
-# PROSTE UI DO WSTRZYKIWANIA AKTUALNEGO SYGNAŁU
-# ==============================================
-
 def set_last_signal(t, s, typ):
     global last_time, last_signal, last_type
     last_time = t
     last_signal = s
     last_type = typ
-
-# Przykład użycia:
-# set_last_signal(t, signal, signal_type) z poziomu głównego GUI projektu
-
-# Funkcje convolution_on_last_signal() oraz radar_on_last_signal()
-# można podpiąć do przycisków w głównym GUI jako dodatkowe akcje
-
-if __name__ == "__main__":
-    print("Moduł gotowy do integracji z GUI.")
