@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, messagebox, Toplevel
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
@@ -235,7 +235,61 @@ def on_convolve():
 
         # Zapisz i wyświetl wynik
         fo.save_signal(t_y, y, params_result, "Splot")
-        so.update_plot_after_operation(t_y, y, params_result, "Splot")
+        #so.update_plot_after_operation(t_y, y, params_result, "Splot")
+
+
+def on_correlate():
+    time1, signal1, params1, signal_type1 = fo.load_signal()
+    time2, signal2, params2, signal_type2 = fo.load_signal()
+
+    if time1 is not None and time2 is not None:
+        # Oblicz korelację
+        y = fil.correlate_signals(signal1, signal2)
+
+        # Ustal krok czasowy z obu sygnałów
+        dt1 = time1[1] - time1[0] if len(time1) > 1 else 1
+        dt2 = time2[1] - time2[0] if len(time2) > 1 else 1
+        dt = min(dt1, dt2)
+
+        # Utwórz nową oś czasu dla wyniku
+        t_y = np.arange(0, len(y)) * dt
+
+        # Kopiuj parametry pierwszego sygnału jako bazowe
+        params_result = params1.copy()
+
+        # Zapisz i wyświetl wynik
+        fo.save_signal(t_y, y, params_result, "Korelacja")
+        #so.update_plot_after_operation(t_y, y, params_result, "Korelacja")
+
+
+def filter_signal_from_file(M=51, K=20):
+    """
+    Wczytuje sygnał z pliku, filtruje go filtrem dolnoprzepustowym i zapisuje wynik.
+
+    Parametry:
+    - M: liczba próbek filtra (długość)
+    - K: szerokość pasma (większa wartość = niższe tłumienie)
+    """
+    # Wczytaj sygnał z pliku
+    time, signal, params, signal_type = fo.load_signal()
+
+    if time is None or signal is None:
+        print("Nie udało się wczytać sygnału.")
+        return
+
+    # Zbuduj filtr dolnoprzepustowy
+    h = fil.design_filter(M=M, K=K, band='low')
+
+    # Zastosuj filtr na sygnale
+    y = fil.apply_filter(signal, h)
+
+    # Oblicz krok czasowy i nową oś czasu
+    dt = time[1] - time[0] if len(time) > 1 else 1
+    t_y = np.arange(len(y)) * dt
+
+    # Zapisz i wyświetl wynik
+    fo.save_signal(t_y, y, params, "Filtr dolnoprzepustowy")
+    #so.update_plot_after_operation(t_y, y, params, "Filtr dolnoprzepustowy")
 
 
 def on_load_main():
@@ -271,6 +325,81 @@ def on_load_main():
         plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type}")
         plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
     canvas.draw()
+
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+import filters as fil
+import File_operations as fo
+import Signal_operations as so
+
+def open_filter_dialog():
+    def apply_filter_action():
+        try:
+            M = int(entry_M.get())
+            K = int(entry_K.get())
+            band = band_var.get()
+            window_type = window_var.get()
+
+            # Załaduj sygnał
+            time, signal, params, signal_type = fo.load_signal()
+            if time is None or signal is None:
+                return
+
+            # Mapowanie typu okna na funkcję
+            window_functions = {
+                "Hamming": fil.hamming_window,
+                "Hanning": fil.hanning_window,
+                "Blackman": fil.blackman_window,
+            }
+
+            window_fn = window_functions.get(window_type, fil.hamming_window)
+
+            # Stwórz filtr i zastosuj go
+            h = fil.design_filter(M, K, window_fn=window_fn, band=band.lower())
+            filtered = fil.apply_filter(signal, h)
+
+            # Zapisz i pokaż
+            dt = time[1] - time[0] if len(time) > 1 else 1
+            new_time = np.arange(0, len(filtered)) * dt
+            new_params = params.copy()
+            fo.save_signal(new_time, filtered, new_params, f"Filtr {band} ({window_type})")
+            so.update_plot_after_operation(new_time, filtered, new_params, f"Filtr {band} ({window_type})")
+
+            dialog.destroy()
+
+        except Exception as e:
+            messagebox.showerror("Błąd", f"Nieprawidłowe dane: {e}")
+
+    dialog = tk.Toplevel()
+    dialog.title("Parametry filtra")
+
+    ttk.Label(dialog, text="Długość filtra (M):").grid(row=0, column=0, padx=10, pady=5)
+    entry_M = ttk.Entry(dialog)
+    entry_M.grid(row=0, column=1)
+
+    ttk.Label(dialog, text="Parametr K (szerokość pasma):").grid(row=1, column=0, padx=10, pady=5)
+    entry_K = ttk.Entry(dialog)
+    entry_K.grid(row=1, column=1)
+
+    ttk.Label(dialog, text="Typ pasma:").grid(row=2, column=0, padx=10, pady=5)
+    band_var = tk.StringVar()
+    band_dropdown = ttk.Combobox(dialog, textvariable=band_var, values=["Low", "High"], state="readonly")
+    band_dropdown.grid(row=2, column=1)
+    band_dropdown.current(0)
+
+    ttk.Label(dialog, text="Typ okna:").grid(row=3, column=0, padx=10, pady=5)
+    window_var = tk.StringVar()
+    window_dropdown = ttk.Combobox(dialog, textvariable=window_var, values=["Hamming", "Rectangular", "Hanning", "Blackman"], state="readonly")
+    window_dropdown.grid(row=3, column=1)
+    window_dropdown.current(0)
+
+    apply_button = ttk.Button(dialog, text="Zastosuj filtr", command=apply_filter_action)
+    apply_button.grid(row=4, column=0, columnspan=2, pady=10)
+
+    dialog.grab_set()
+
+
 
 conversion_param_entries_sample = {}
 
@@ -333,9 +462,11 @@ Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(sid
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=5)
 
 Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(200, 0))
-Button(frame_buttons, text="Splot sygnału", command=fil.convolution_on_last_signal).pack(side="left", padx=5)
+#Button(frame_buttons, text="Splot sygnału", command=fil.convolution_on_last_signal).pack(side="left", padx=5)
 Button(frame_buttons, text="Symulacja radaru", command=fil.radar_on_last_signal).pack(side="left", padx=5)
-Button(frame_buttons, text="Splot 2 sygnałów", command=on_convolve).pack(pady=10)
+Button(frame_buttons, text="Splot", command=on_convolve).pack(side="left", padx=5)
+Button(frame_buttons, text="Korelacja", command=on_correlate).pack(side="left", padx=5)
+Button(frame_buttons, text="Filtracja", command=open_filter_dialog).pack(side="left", padx=5)
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
