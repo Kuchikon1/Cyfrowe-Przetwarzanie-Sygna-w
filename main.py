@@ -150,24 +150,6 @@ def calculate_signal_parameters(t, signal, d, signal_type):
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
 
-
-def set_current_as_last_signal():
-    global last_signal
-    full_signal_name = signal_var.get()
-    signal_type = next((key for key, value in signal_map.items() if value == full_signal_name), None)
-
-    if not signal_type:
-        print(f"Błąd: Nieznany sygnał '{full_signal_name}'")
-        return
-
-    try:
-        time, signal, d = generate_signal(signal_type)
-        last_signal = signal
-        print("Zaktualizowano last_signal.")
-    except Exception as e:
-        print(f"Błąd podczas ustawiania last_signal: {e}")
-
-
 def update_plot():
     full_signal_name = signal_var.get()
     signal_type = [key for key, value in signal_map.items() if value == full_signal_name][0]
@@ -213,7 +195,6 @@ def on_load():
         return None
     return time, signal, params, signal_type
 
-
 def on_convolve():
     time1, signal1, params1, signal_type1 = fo.load_signal()
     time2, signal2, params2, signal_type2 = fo.load_signal()
@@ -235,8 +216,6 @@ def on_convolve():
 
         # Zapisz i wyświetl wynik
         fo.save_signal(t_y, y, params_result, "Splot")
-        #so.update_plot_after_operation(t_y, y, params_result, "Splot")
-
 
 def on_correlate():
     time1, signal1, params1, signal_type1 = fo.load_signal()
@@ -259,38 +238,6 @@ def on_correlate():
 
         # Zapisz i wyświetl wynik
         fo.save_signal(t_y, y, params_result, "Korelacja")
-        #so.update_plot_after_operation(t_y, y, params_result, "Korelacja")
-
-
-def filter_signal_from_file(M=51, K=20):
-    """
-    Wczytuje sygnał z pliku, filtruje go filtrem dolnoprzepustowym i zapisuje wynik.
-
-    Parametry:
-    - M: liczba próbek filtra (długość)
-    - K: szerokość pasma (większa wartość = niższe tłumienie)
-    """
-    # Wczytaj sygnał z pliku
-    time, signal, params, signal_type = fo.load_signal()
-
-    if time is None or signal is None:
-        print("Nie udało się wczytać sygnału.")
-        return
-
-    # Zbuduj filtr dolnoprzepustowy
-    h = fil.design_filter(M=M, K=K, band='low')
-
-    # Zastosuj filtr na sygnale
-    y = fil.apply_filter(signal, h)
-
-    # Oblicz krok czasowy i nową oś czasu
-    dt = time[1] - time[0] if len(time) > 1 else 1
-    t_y = np.arange(len(y)) * dt
-
-    # Zapisz i wyświetl wynik
-    fo.save_signal(t_y, y, params, "Filtr dolnoprzepustowy")
-    #so.update_plot_after_operation(t_y, y, params, "Filtr dolnoprzepustowy")
-
 
 def on_load_main():
     data = on_load()
@@ -299,7 +246,6 @@ def on_load_main():
     time, signal, params, signal_type = data
 
     signal_var.set(signal_map.get(signal_type, "Nieznany sygnał"))
-    fil.set_last_signal(time, signal, signal_type)
 
     for abbr, value in params.items():
         if abbr in param_entries:
@@ -325,7 +271,6 @@ def on_load_main():
         plot_signal(ax1, time, signal, signal_type, f"Wczytany sygnał {signal_type}")
         plot_histogram(ax2, signal, f"Histogram wczytanego sygnału {signal_type}", 10)
     canvas.draw()
-
 
 def open_filter_dialog():
     def apply_filter_action():
@@ -384,7 +329,7 @@ def open_filter_dialog():
 
     ttk.Label(dialog, text="Typ okna:").grid(row=3, column=0, padx=10, pady=5)
     window_var = StringVar()
-    window_dropdown = ttk.Combobox(dialog, textvariable=window_var, values=["Hamming", "Rectangular", "Hanning", "Blackman"], state="readonly")
+    window_dropdown = ttk.Combobox(dialog, textvariable=window_var, values=["Hamming", "Hanning", "Blackman"], state="readonly")
     window_dropdown.grid(row=3, column=1)
     window_dropdown.current(0)
 
