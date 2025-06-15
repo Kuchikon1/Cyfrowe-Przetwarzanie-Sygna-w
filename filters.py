@@ -64,7 +64,7 @@ def ideal_lowpass_response(M, K):
             h[n] = np.sin(2 * np.pi * (n - (M - 1) // 2) / K) / (np.pi * (n - (M - 1) // 2))
     return h
 
-def design_filter(M, K, window_fn=hamming_window, band='low'):
+def design_filter(M, K, window_fn, band):
     h = ideal_lowpass_response(M, K)
     window = window_fn(M)
     h *= window
