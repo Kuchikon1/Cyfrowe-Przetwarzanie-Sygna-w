@@ -1,0 +1,187 @@
+import numpy as np
+
+# ===================== F1: DFT z definicji + DIT FFT =====================
+
+def dft(x):
+    x = np.asarray(x, dtype=complex)
+    N = len(x)
+    X = np.zeros(N, dtype=complex)
+    for k in range(N):
+        for n in range(N):
+            X[k] += x[n] * np.exp(-2j * np.pi * k * n / N)
+    return X
+
+def fft_dit(x):
+    x = np.asarray(x, dtype=complex)
+    N = x.shape[0]
+    if N <= 1:
+        return x
+    if np.log2(N) % 1 > 0:
+        raise ValueError("Długość sygnału musi być potęgą 2")
+    even = fft_dit(x[::2])
+    odd = fft_dit(x[1::2])
+    factor = np.exp(-2j * np.pi * np.arange(N) / N)
+    return np.concatenate([even + factor[:N // 2] * odd,
+                           even - factor[:N // 2] * odd])
+
+# ===================== F2: DIF FFT =====================
+
+def fft_dif(x):
+    x = np.asarray(x, dtype=complex)
+    N = len(x)
+    if np.log2(N) % 1 > 0:
+        raise ValueError("Długość sygnału musi być potęgą 2")
+
+    stages = int(np.log2(N))
+    X = np.copy(x)
+
+    for s in range(stages):
+        m = 2 ** (stages - s)
+        half_m = m // 2
+        for k in range(0, N, m):
+            for j in range(half_m):
+                index1 = k + j
+                index2 = k + j + half_m
+                t = X[index1] + X[index2]
+                u = (X[index1] - X[index2]) * np.exp(-2j * np.pi * j / m)
+                X[index1] = t
+                X[index2] = u
+    # Bit reversal permutation
+    bit_rev = np.arange(N).reshape(-1, 1)
+    bits = np.arange(stages)
+    reversed_indices = ((bit_rev >> bits) & 1).dot(1 << (stages - 1 - bits))
+    return X[reversed_indices.flatten()]
+
+# ===================== T1: DCT-II =====================
+
+def dct2(x):
+    x = np.asarray(x, dtype=float)
+    N = len(x)
+    result = np.zeros(N)
+    for k in range(N):
+        sum_val = 0
+        for n in range(N):
+            sum_val += x[n] * np.cos(np.pi * k * (2 * n + 1) / (2 * N))
+        result[k] = sum_val
+    result[0] *= 1 / np.sqrt(N)
+    result[1:] *= np.sqrt(2 / N)
+    return result
+
+# ===================== T2: Walsh-Hadamard Transform =====================
+
+def wht(x):
+    x = np.asarray(x, dtype=float)
+    N = len(x)
+    if np.log2(N) % 1 > 0:
+        raise ValueError("Długość sygnału musi być potęgą 2")
+
+    X = np.copy(x)
+    h = 1
+    while h < N:
+        for i in range(0, N, h * 2):
+            for j in range(i, i + h):
+                a = X[j]
+                b = X[j + h]
+                X[j] = a + b
+                X[j + h] = a - b
+        h *= 2
+    return X
+
+
+def fwht(x):
+    h = 1
+    x = x.copy()
+    n = len(x)
+    while h < n:
+        for i in range(0, n, h * 2):
+            for j in range(i, i + h):
+                a = x[j]
+                b = x[j + h]
+                x[j] = a + b
+                x[j + h] = a - b
+        h *= 2
+    return x
+
+
+# ===================== T3: Falkowa (Wavelet, np. DB4, DB6, DB8 – 1 poziom) =====================
+
+# Filtrowanie: db4, db6, db8 (współczynniki Daubechies znormalizowane)
+
+db_filters = {
+    "db4": np.array([
+        0.4829629131445341, 0.8365163037378079,
+        0.2241438680420134, -0.1294095225512604
+    ]),
+    "db6": np.array([
+        0.332670552950, 0.806891509311, 0.459877502118,
+        -0.135011020010, -0.085441273882, 0.035226291882
+    ]),
+    "db8": np.array([
+        0.230377813309, 0.714846570553, 0.630880767930,
+        -0.027983769417, -0.187034811719, 0.030841381836,
+        0.032883011667, -0.010597401785
+    ])
+}
+
+def wavelet_transform(signal, wavelet='db4'):
+    signal = np.asarray(signal, dtype=float)
+    h = db_filters[wavelet]
+    g = h[::-1].copy()
+    g[::2] *= -1  # High-pass (detail)
+
+    N = len(signal)
+    l = len(h)
+    approx = []
+    detail = []
+
+    # Padding signal (wrap mode)
+    extended = np.concatenate([signal[-l + 1:], signal, signal[:l - 1]])
+
+    for i in range(0, N, 2):
+        a = np.sum(extended[i:i + l] * h)
+        d = np.sum(extended[i:i + l] * g)
+        approx.append(a)
+        detail.append(d)
+
+    return np.array(approx), np.array(detail)
+
+
+def wavelet_fast_transform(signal):
+    """
+    Szybka transformata falkowa typu Haar z użyciem tylko numpy.
+    Zwraca połączone współczynniki przybliżeń i szczegółów.
+    """
+    signal = np.array(signal, dtype=float)
+    n = len(signal)
+
+    if n & (n - 1) != 0:
+        raise ValueError("Długość sygnału musi być potęgą dwójki.")
+
+    output = []
+    current = signal.copy()
+
+    while len(current) > 1:
+        approx = (current[::2] + current[1::2]) / np.sqrt(2)
+        detail = (current[::2] - current[1::2]) / np.sqrt(2)
+        output.insert(0, detail)  # szczegóły w odwrotnej kolejności
+        current = approx
+
+    output.insert(0, current)  # ostatnie przybliżenie na początek
+    return np.concatenate(output)
+
+
+def fourier_fft(time, signal, N=None):
+    signal = np.asarray(signal, dtype=float)
+    dt = time[1] - time[0]
+    if N is None:
+        N = len(signal)
+    spectrum = np.fft.fft(signal, n=N)
+    freq = np.fft.fftfreq(N, d=dt)
+    magnitude = np.abs(spectrum)
+    phase = np.angle(spectrum)
+    return freq, magnitude, phase
+
+
+def fourier_ifft(spectrum_complex, N=None):
+    return np.fft.ifft(spectrum_complex, n=N)
+

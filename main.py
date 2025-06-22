@@ -1,14 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, messagebox, Toplevel
+from tkinter import Tk, Frame, StringVar, ttk, Entry, Button, Label, messagebox, Toplevel, BooleanVar, IntVar
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import File_operations as fo
 import Signal_operations as so
 import Signal_functions as sf
 from Dictionary import (signal_map, param_entries, param_abbreviations, signal_params_map)
 import filters as fil
-
+import Transformations_operations as to
+import Transformations_windows as tw
 from Conversion_windows import create_conversion_window
+
 
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
@@ -81,12 +83,14 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     if signal_type in ["S10", "S11"]:
         ax.scatter(time, signal, label="Sygnał", color='blue')
     else:
-        ax.plot(time, signal, label="Sygnał")
+        ax.plot(time, signal)
+
     ax.set_xlabel("Czas [s]")
     ax.set_ylabel("Amplituda")
     ax.set_title(title)
     ax.legend()
     ax.grid()
+
 
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.clear()
@@ -109,7 +113,7 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
     ax.set_title(title)
-
+#
 def calculate_signal_parameters(t, signal, d, signal_type):
     if signal_type in ["S10", "S11"]:
         mean_value = np.mean(signal)
@@ -149,6 +153,7 @@ def calculate_signal_parameters(t, signal, d, signal_type):
             effective_signal = np.sqrt(mean_power)
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
+
 
 def update_plot():
     full_signal_name = signal_var.get()
@@ -292,7 +297,9 @@ def open_filter_dialog():
                 "Blackman": fil.blackman_window,
             }
 
-            window_fn = window_functions.get(window_type, window_functions)
+            window_fn = window_functions.get(window_type)
+            if not window_fn:
+                raise ValueError(f"Nieznany typ okna: {window_type}")
 
             # Stwórz filtr i zastosuj go
             h = fil.design_filter(M, K, window_fn, band)
@@ -307,35 +314,29 @@ def open_filter_dialog():
             dialog.destroy()
 
         except Exception as e:
-            messagebox.showerror("Błąd", f"Nieprawidłowe dane: {e}")
+            messagebox.showerror("Błąd", f"Nieprawidłowe dane: {str(e)}")
 
     dialog = Toplevel()
-    dialog.title("Parametry filtra")
+    dialog.title("Zastosuj filtr")
 
-    ttk.Label(dialog, text="Długość filtra (M):").grid(row=0, column=0, padx=10, pady=5)
-    entry_M = ttk.Entry(dialog)
+    Label(dialog, text="Rozmiar filtru (M):").grid(row=0, column=0, sticky="e")
+    entry_M = Entry(dialog)
     entry_M.grid(row=0, column=1)
 
-    ttk.Label(dialog, text="Parametr K (szerokość pasma):").grid(row=1, column=0, padx=10, pady=5)
-    entry_K = ttk.Entry(dialog)
+    Label(dialog, text="Częstotliwość odcięcia (K):").grid(row=1, column=0, sticky="e")
+    entry_K = Entry(dialog)
     entry_K.grid(row=1, column=1)
 
-    ttk.Label(dialog, text="Typ pasma:").grid(row=2, column=0, padx=10, pady=5)
-    band_var = StringVar()
-    band_dropdown = ttk.Combobox(dialog, textvariable=band_var, values=["Low", "High"], state="readonly")
-    band_dropdown.grid(row=2, column=1)
-    band_dropdown.current(0)
+    Label(dialog, text="Typ pasma:").grid(row=2, column=0, sticky="e")
+    band_var = StringVar(value="lowpass")
+    ttk.Combobox(dialog, textvariable=band_var, values=["lowpass", "highpass", "bandpass", "bandstop"]).grid(row=2, column=1)
 
-    ttk.Label(dialog, text="Typ okna:").grid(row=3, column=0, padx=10, pady=5)
-    window_var = StringVar()
-    window_dropdown = ttk.Combobox(dialog, textvariable=window_var, values=["Hamming", "Hanning", "Blackman"], state="readonly")
-    window_dropdown.grid(row=3, column=1)
-    window_dropdown.current(0)
+    Label(dialog, text="Typ okna:").grid(row=3, column=0, sticky="e")
+    window_var = StringVar(value="Hamming")
+    ttk.Combobox(dialog, textvariable=window_var, values=["Hamming", "Hanning", "Blackman"]).grid(row=3, column=1)
 
-    apply_button = ttk.Button(dialog, text="Zastosuj filtr", command=apply_filter_action)
-    apply_button.grid(row=4, column=0, columnspan=2, pady=10)
+    Button(dialog, text="Zastosuj filtr", command=apply_filter_action).grid(row=4, column=0, columnspan=2, pady=10)
 
-    dialog.grab_set()
 
 conversion_param_entries_sample = {}
 
@@ -344,9 +345,19 @@ def open_conversion_window():
     create_conversion_window(root, "Konwersja sygnału", signal_var, conversion_param_entries_sample, on_save,
                              on_load, param_names=params)
 
+
+def open_dual_plot_window():
+    tw.create_fourier_window(root)
+
+
 # Tworzenie GUI
 root = Tk()
 root.title("Generator Sygnałów")
+
+# obok istniejących:
+complex_display_mode = BooleanVar(value=False)
+complex_plot_variant = IntVar(value=0)  # 0 → W1, 1 → W2
+
 
 frame_buttons = Frame(root)
 frame_buttons.pack(side="top", anchor="w", padx=10, pady=10)
@@ -396,12 +407,15 @@ Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left"
 Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=3)
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=3)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=3)
+#Button(frame_buttons, text="Generuj sygnał zespolony", command=to.on_generate_complex_signal).pack(side="left", padx=5)
 
 Button(frame_buttons, text="Splot", command=on_convolve).pack(side="left", padx=(90,3))
 Button(frame_buttons, text="Korelacja", command=on_correlate).pack(side="left", padx=3)
 Button(frame_buttons, text="Filtracja", command=open_filter_dialog).pack(side="left", padx=3)
 
-Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(90, 0))
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(60, 0))
+Button(frame_buttons, text="Transformacja", command=open_dual_plot_window).pack(side="right", padx=(60, 0))
+
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
