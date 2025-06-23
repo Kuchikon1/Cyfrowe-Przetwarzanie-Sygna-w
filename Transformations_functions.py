@@ -16,8 +16,6 @@ def fft_dit(x):
     N = x.shape[0]
     if N <= 1:
         return x
-    if np.log2(N) % 1 > 0:
-        raise ValueError("Długość sygnału musi być potęgą 2")
     even = fft_dit(x[::2])
     odd = fft_dit(x[1::2])
     factor = np.exp(-2j * np.pi * np.arange(N) / N)
@@ -29,8 +27,6 @@ def fft_dit(x):
 def fft_dif(x):
     x = np.asarray(x, dtype=complex)
     N = len(x)
-    if np.log2(N) % 1 > 0:
-        raise ValueError("Długość sygnału musi być potęgą 2")
 
     stages = int(np.log2(N))
     X = np.copy(x)
@@ -73,8 +69,6 @@ def fct(x):
         if N == 1:
             return np.sqrt(2) * x.copy()
 
-        if N % 2 != 0:
-            raise ValueError("Długość sygnału musi być potęgą 2")
 
         # Podział sygnału na parzyste i nieparzyste elementy
         even = x[::2]
@@ -95,8 +89,6 @@ def fct(x):
 
     x = np.asarray(x, dtype=float)
     N = len(x)
-    if not (N != 0 and ((N & (N - 1)) == 0)):
-        raise ValueError("Długość sygnału musi być potęgą 2")
 
     result = fast_dct2_recursive(x)
 
@@ -111,8 +103,6 @@ def fct(x):
 def wht(x):
     x = np.asarray(x, dtype=float)
     N = len(x)
-    if np.log2(N) % 1 > 0:
-        raise ValueError("Długość sygnału musi być potęgą 2")
 
     X = np.copy(x)
     h = 1
@@ -193,8 +183,6 @@ def wavelet_fast_transform(signal):
     signal = np.array(signal, dtype=float)
     n = len(signal)
 
-    if n & (n - 1) != 0:
-        raise ValueError("Długość sygnału musi być potęgą dwójki.")
 
     output = []
     current = signal.copy()
