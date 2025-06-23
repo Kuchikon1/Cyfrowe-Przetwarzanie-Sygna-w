@@ -83,49 +83,9 @@ def create_fourier_window(root, title="Transformacja Fouriera"):
     frame_params = Frame(frame_main)
     frame_params.pack(side="left", fill="y")
 
-    # Label(frame_params, text="Typ analizy FFT:", anchor="w").pack(pady=(0, 5))
-    # OptionMenu(frame_params, analysis_type, "Moduł", "Faza").pack(pady=(0, 15))
-
-    # # Lista wartości: potęgi 2 od 2 do 1024
-    # fft_lengths = [2 ** i for i in range(1, 11)]  # [2, 4, 8, ..., 1024]
-    #
-    # Label(frame_params, text="Długość FFT:", anchor="w").pack()
-    #
-    # # Zmienna kontrolująca wybór
-    # fft_len_var = StringVar()
-    # fft_len_var.set("1024")  # domyślna wartość
-    #
-    # # Tworzenie listy rozwijanej
-    # fft_len_menu = OptionMenu(frame_params, fft_len_var, *fft_lengths)
-    # fft_len_menu.config(width=28)
-    # fft_len_menu.pack(pady=(0, 10))
-    #
-    # # Przypisanie do słownika parametrów (jeśli później odczytujesz z niego)
-    # fourier_param_entries["fft_len"] = fft_len_var
-
     mode_var = StringVar(value="W2")  # domyślnie moduł/faza
 
-    Label(frame_params, text="Tryb wyświetlania:", anchor="w").pack()
-    OptionMenu(frame_params, mode_var, "W1", "W2").pack(pady=(0, 10))
-
-    Label(frame_params, text="Wybierz transformację:", font=("Arial", 14)).pack(pady=10)
-
-    # Fouriera
-    # Button(frame_params, text="DFT", command=lambda: to.on_generate_complex_and_transform(tf.dft)).pack(pady=3)
-    # Button(frame_params, text="FFT", command=lambda: to.on_generate_complex_and_transform(tf.fft_dif)).pack(pady=3)
-    # Button(frame_params, text="FFT", command=lambda: to.on_generate_complex_and_transform(tf.fft_dit)).pack(pady=3)
-    #
-    # # Walsh-Hadamard
-    # Button(frame_params, text="WHT", command=lambda: to.on_generate_complex_and_transform(tf.wht)).pack(pady=3)
-    # Button(frame_params, text="FWHT", command=lambda: to.on_generate_complex_and_transform(tf.fwht)).pack(pady=3)
-    #
-    # # Kosinusowa
-    # Button(frame_params, text="DCT", command=lambda: to.on_generate_complex_and_transform(tf.dct2)).pack(pady=3)
-    # Button(frame_params, text="FDCT", command=lambda: to.on_generate_complex_and_transform(tf.dft)).pack(pady=3)
-    #
-    # # Falkowa
-    # Button(frame_params, text="DWT", command=lambda: to.on_generate_complex_and_transform(tf.wavelet_transform)).pack(pady=3)
-    # Button(frame_params, text="FWT", command=lambda: to.on_generate_complex_and_transform(tf.wavelet_fast_transform)).pack(pady=3)
+    Label(frame_params, text="Wybierz transformację:", font=("Arial", 10)).pack(pady=10, padx=20)
 
     # Lista możliwych długości FFT
     Label(frame_params, text="Długość FFT:", anchor="w").pack()
@@ -142,13 +102,16 @@ def create_fourier_window(root, title="Transformacja Fouriera"):
     transform_box.set("DFT")  # wartość domyślna
     transform_box.pack(pady=(0, 10))
 
+    Label(frame_params, text="Tryb wyświetlania:", anchor="w").pack()
+    OptionMenu(frame_params, mode_var, "W1", "W2").pack(pady=(0, 10))
+
     Button(
-        frame_buttons,
+        frame_params,
         text="Generuj i przekształć",
         command=lambda: to.on_generate_complex_and_transform(
             int(fft_len_var.get()), transform_choice.get()
         )
-    ).pack()
+    ).pack(pady=(200,10))
 
     frame_plot = Frame(frame_main)
     frame_plot.pack(side="right", fill="both", expand=True)

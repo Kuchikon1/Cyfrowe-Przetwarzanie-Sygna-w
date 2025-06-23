@@ -407,14 +407,13 @@ Button(frame_buttons, text="Dodaj sygnały", command=so.on_add).pack(side="left"
 Button(frame_buttons, text="Odejmij sygnały", command=so.on_subtract).pack(side="left", padx=3)
 Button(frame_buttons, text="Pomnóż sygnały", command=so.on_multiply).pack(side="left", padx=3)
 Button(frame_buttons, text="Podziel sygnały", command=so.on_divide).pack(side="left", padx=3)
-#Button(frame_buttons, text="Generuj sygnał zespolony", command=to.on_generate_complex_signal).pack(side="left", padx=5)
 
-Button(frame_buttons, text="Splot", command=on_convolve).pack(side="left", padx=(90,3))
+Button(frame_buttons, text="Splot", command=on_convolve).pack(side="left", padx=(31,3))
 Button(frame_buttons, text="Korelacja", command=on_correlate).pack(side="left", padx=3)
 Button(frame_buttons, text="Filtracja", command=open_filter_dialog).pack(side="left", padx=3)
 
-Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(60, 0))
-Button(frame_buttons, text="Transformacja", command=open_dual_plot_window).pack(side="right", padx=(60, 0))
+Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(31, 0))
+Button(frame_buttons, text="Transformacja", command=open_dual_plot_window).pack(side="right", padx=(31, 0))
 
 
 # Wykresy
