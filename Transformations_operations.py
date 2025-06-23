@@ -182,7 +182,9 @@ def on_generate_complex_and_transform(fft_len, selected_transform):
     elif selected_transform == "FFT_DIF":
         transformed = tf.fft_dif(complex_signal[:fft_len])
     elif selected_transform == "DCT":
-        transformed = tf.dct2(np.real(complex_signal[:fft_len]))
+        transformed = tf.dct(np.real(complex_signal[:fft_len]))
+    elif selected_transform == "FCT":
+        transformed = tf.fct(np.real(complex_signal[:fft_len]))
     elif selected_transform == "WHT":
         transformed = tf.wht(np.real(complex_signal[:fft_len]))
     elif selected_transform == "FWHT":

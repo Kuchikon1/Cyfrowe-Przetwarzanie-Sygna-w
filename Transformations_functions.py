@@ -46,7 +46,6 @@ def fft_dif(x):
                 u = (X[index1] - X[index2]) * np.exp(-2j * np.pi * j / m)
                 X[index1] = t
                 X[index2] = u
-    # Bit reversal permutation
     bit_rev = np.arange(N).reshape(-1, 1)
     bits = np.arange(stages)
     reversed_indices = ((bit_rev >> bits) & 1).dot(1 << (stages - 1 - bits))
@@ -54,7 +53,7 @@ def fft_dif(x):
 
 # ===================== T1: DCT-II =====================
 
-def dct2(x):
+def dct(x):
     x = np.asarray(x, dtype=float)
     N = len(x)
     result = np.zeros(N)
@@ -66,6 +65,35 @@ def dct2(x):
     result[0] *= 1 / np.sqrt(N)
     result[1:] *= np.sqrt(2 / N)
     return result
+
+
+def fct(x):
+    x = np.asarray(x, dtype=float)
+    N = len(x)
+
+    if N == 1:
+        return np.sqrt(2) * x.copy()
+
+    if N % 2 != 0:
+        raise ValueError("Długość sygnału musi być potęgą 2")
+
+    # Podział sygnału na parzyste i nieparzyste elementy
+    even = x[::2]
+    odd = x[1::2][::-1]  # odwrotna kolejność!
+
+    # Rekurencja
+    X_even = fast_dct2_recursive(even)
+    X_odd = fast_dct2_recursive(odd)
+
+    # Obliczanie współczynników
+    result = np.zeros(N)
+    for k in range(N // 2):
+        cos_term = np.cos(np.pi * (2 * k + 1) / (2 * N))
+        result[k] = X_even[k] + cos_term * X_odd[k]
+        result[N - 1 - k] = X_even[k] - cos_term * X_odd[k]
+
+    return result
+
 
 # ===================== T2: Walsh-Hadamard Transform =====================
 
@@ -170,18 +198,18 @@ def wavelet_fast_transform(signal):
     return np.concatenate(output)
 
 
-def fourier_fft(time, signal, N=None):
-    signal = np.asarray(signal, dtype=float)
-    dt = time[1] - time[0]
-    if N is None:
-        N = len(signal)
-    spectrum = np.fft.fft(signal, n=N)
-    freq = np.fft.fftfreq(N, d=dt)
-    magnitude = np.abs(spectrum)
-    phase = np.angle(spectrum)
-    return freq, magnitude, phase
-
-
-def fourier_ifft(spectrum_complex, N=None):
-    return np.fft.ifft(spectrum_complex, n=N)
+# def fourier_fft(time, signal, N=None):
+#     signal = np.asarray(signal, dtype=float)
+#     dt = time[1] - time[0]
+#     if N is None:
+#         N = len(signal)
+#     spectrum = np.fft.fft(signal, n=N)
+#     freq = np.fft.fftfreq(N, d=dt)
+#     magnitude = np.abs(spectrum)
+#     phase = np.angle(spectrum)
+#     return freq, magnitude, phase
+#
+#
+# def fourier_ifft(spectrum_complex, N=None):
+#     return np.fft.ifft(spectrum_complex, n=N)
 

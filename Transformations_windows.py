@@ -75,8 +75,7 @@ def create_fourier_window(root, title="Transformacja Fouriera"):
     fft_len_var = StringVar()
     transform_choice = StringVar()
 
-    Button(frame_buttons, text="Zapisz widmo", command=to.save_complex_signal).pack(side="left", padx=(0, 5))
-    Button(frame_buttons, text="Wczytaj sygnał", command=on_load_complex_signal).pack(side="left")
+    Button(frame_buttons, text="Wczytaj sygnał", command=on_load_complex_signal).pack(side="left", padx=(0, 5))
 
     frame_main = Frame(new_window)
     frame_main.pack(fill="both", expand=True, padx=10, pady=10)
@@ -138,7 +137,7 @@ def create_fourier_window(root, title="Transformacja Fouriera"):
     # Lista dostępnych transformacji
     Label(frame_params, text="Rodzaj transformacji:", anchor="w").pack()
     transform_box = ttk.Combobox(frame_params, textvariable=transform_choice, values=[
-        "DFT", "FFT_DIT", "FFT_DIF", "DCT", "WHT", "FWHT", "Wavelet", "FastWavelet"
+        "DFT", "FFT_DIT", "FFT_DIF", "DCT", "FCT", "WHT", "FWHT", "Wavelet", "FastWavelet"
     ], state="readonly")
     transform_box.set("DFT")  # wartość domyślna
     transform_box.pack(pady=(0, 10))
