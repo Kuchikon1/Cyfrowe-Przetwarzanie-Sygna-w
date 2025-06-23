@@ -11,7 +11,6 @@ import Transformations_operations as to
 import Transformations_windows as tw
 from Conversion_windows import create_conversion_window
 
-
 def get_full_param_name(abbreviation, pool):
     return next((name for name, abbr in pool.items() if abbr == abbreviation), abbreviation)
 
@@ -91,7 +90,6 @@ def plot_signal(ax, time, signal, signal_type, title="Wykres sygnału"):
     ax.legend()
     ax.grid()
 
-
 def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.clear()
 
@@ -113,7 +111,7 @@ def plot_histogram(ax, signal, title="Histogram sygnału", bins=10):
     ax.set_xlabel("Amplituda")
     ax.set_ylabel("Liczność")
     ax.set_title(title)
-#
+
 def calculate_signal_parameters(t, signal, d, signal_type):
     if signal_type in ["S10", "S11"]:
         mean_value = np.mean(signal)
@@ -153,7 +151,6 @@ def calculate_signal_parameters(t, signal, d, signal_type):
             effective_signal = np.sqrt(mean_power)
 
     return mean_value, mean_abs_value, effective_signal, variance, mean_power
-
 
 def update_plot():
     full_signal_name = signal_var.get()
@@ -337,7 +334,6 @@ def open_filter_dialog():
 
     Button(dialog, text="Zastosuj filtr", command=apply_filter_action).grid(row=4, column=0, columnspan=2, pady=10)
 
-
 conversion_param_entries_sample = {}
 
 def open_conversion_window():
@@ -345,10 +341,8 @@ def open_conversion_window():
     create_conversion_window(root, "Konwersja sygnału", signal_var, conversion_param_entries_sample, on_save,
                              on_load, param_names=params)
 
-
 def open_dual_plot_window():
     tw.create_fourier_window(root)
-
 
 # Tworzenie GUI
 root = Tk()
@@ -357,7 +351,6 @@ root.title("Generator Sygnałów")
 # obok istniejących:
 complex_display_mode = BooleanVar(value=False)
 complex_plot_variant = IntVar(value=0)  # 0 → W1, 1 → W2
-
 
 frame_buttons = Frame(root)
 frame_buttons.pack(side="top", anchor="w", padx=10, pady=10)
@@ -414,7 +407,6 @@ Button(frame_buttons, text="Filtracja", command=open_filter_dialog).pack(side="l
 
 Button(frame_buttons, text="Konwersja", command=open_conversion_window).pack(side="right", padx=(31, 0))
 Button(frame_buttons, text="Transformacja", command=open_dual_plot_window).pack(side="right", padx=(31, 0))
-
 
 # Wykresy
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))

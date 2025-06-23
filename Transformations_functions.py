@@ -62,7 +62,6 @@ def dct(x):
     result[1:] *= np.sqrt(2 / N)
     return result
 
-
 def fct(x):
     def fast_dct2_recursive(x):
         N = len(x)
@@ -97,7 +96,6 @@ def fct(x):
     result[1:] *= np.sqrt(2 / N)
     return result
 
-
 # ===================== T2: Walsh-Hadamard Transform =====================
 
 def wht(x):
@@ -130,7 +128,6 @@ def fwht(x):
                 x[j + h] = a - b
         h *= 2
     return x
-
 
 # ===================== T3: Falkowa (Wavelet, np. DB4, DB6, DB8 – 1 poziom) =====================
 
@@ -174,8 +171,6 @@ def wavelet_transform(signal, wavelet='db4'):
         detail.append(d)
 
     return np.array(approx), np.array(detail)
-
-
 
 def wavelet_fast_transform(signal):
     signal = np.array(signal, dtype=float)

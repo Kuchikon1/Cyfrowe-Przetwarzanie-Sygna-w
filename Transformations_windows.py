@@ -5,7 +5,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 def plot_fourier(ax, freq, magnitude, title="FFT sygnału"):
     ax.clear()
     ax.plot(freq, magnitude, color="blue")

@@ -6,26 +6,6 @@ import pickle
 from tkinter import filedialog, messagebox, simpledialog
 import time
 
-
-# def load_and_transform_fourier(use_fft=True):
-#     time, signal, params, signal_type = fo.load_signal()
-#
-#     if signal is None:
-#         print("Nie wczytano sygnału.")
-#         return None, None, None
-#
-#     # Konwersja sygnału na typ zespolony (w razie czego)
-#     signal = np.asarray(signal, dtype=complex)
-#
-#     # Transformacja
-#     if use_fft:
-#         freq_domain = tf.fft_dit(signal)
-#     else:
-#         freq_domain = tf.dft(signal)
-#
-#     return freq_domain, time, signal_type
-
-
 def save_complex_signal(signal, params, signal_type):
     file_path = filedialog.asksaveasfilename(defaultextension=".pkl", filetypes=[("Pickle", "*.pkl")])
     if not file_path:
@@ -52,8 +32,6 @@ def save_complex_signal(signal, params, signal_type):
 
     print(f"Sygnał zespolony zapisany do {file_path}")
 
-
-
 def load_complex_signal():
     file_path = filedialog.askopenfilename(defaultextension=".pkl", filetypes=[("Plik Pickle", "*.pkl")])
     if file_path:
@@ -64,7 +42,6 @@ def load_complex_signal():
         return time, freq_domain, params, signal_type
     else:
         return None, None, None, None
-
 
 def update_plot_after_operation(time, freq_domain, params, operation_type, mode="W1"):
     import main
@@ -120,60 +97,8 @@ def update_plot_after_operation(time, freq_domain, params, operation_type, mode=
 
     main.canvas.draw()
 
-
-# def on_generate_complex_and_transform(transform_function):
-#     print("Wybierz sygnał dla części rzeczywistej:")
-#     time1, signal1, params1, signal_type1 = fo.load_signal()
-#     print("Wybierz sygnał dla części urojonej:")
-#     time2, signal2, params2, signal_type2 = fo.load_signal()
-#
-#     if time1 is None or time2 is None:
-#         print("Nie udało się wczytać obu sygnałów.")
-#         return
-#
-#     if len(time1) != len(time2) or not np.allclose(time1, time2):
-#         print("Błąd: sygnały muszą mieć taki sam czas.")
-#         return
-#
-#     # Budujemy sygnał zespolony
-#     complex_signal = np.array(signal1) + 1j * np.array(signal2)
-#
-#     # Pobierz długość FFT wybraną przez użytkownika
-#     fft_len = int(tw.fourier_param_entries["fft_len"].get())
-#
-#     # Przytnij lub dopaduj sygnał do wybranej długości
-#     if len(complex_signal) > fft_len:
-#         signal_to_transform = complex_signal[:fft_len]
-#     elif len(complex_signal) < fft_len:
-#         padding = np.zeros(fft_len - len(complex_signal), dtype=complex)
-#         signal_to_transform = np.concatenate((complex_signal, padding))
-#     else:
-#         signal_to_transform = complex_signal
-#
-#     # Mierzenie czasu transformacji
-#     start_time = time.perf_counter()
-#     transformed_signal = transform_function(complex_signal)
-#     end_time = time.perf_counter()
-#
-#     elapsed_time = end_time - start_time
-#     print(f"Czas wykonania transformacji {transform_function.__name__}: {elapsed_time:.6f} s")
-#
-#     # Zapis sygnału
-#     combined_signal_type = f"Zespolony + {transform_function.__name__}"
-#     save_complex_signal(transformed_signal, time1, combined_signal_type, params1)
-#
-#     # Wyświetlenie wyniku w oknie
-#     messagebox.showinfo(
-#         title="Czas transformacji",
-#         message=f"Transformacja {transform_function.__name__} zakończona.\n\n"
-#                 f"Czas wykonania: {elapsed_time:.6f} sekund"
-#     )
-#
-#     print("Transformacja zakończona i wynik zapisany.")
-
 def nearest_lower_power_of_two(n):
     return 2 ** (n.bit_length() - 1)
-
 
 def on_generate_complex_and_transform(fft_len, selected_transform):
     print("Wybierz sygnał dla części rzeczywistej:")
@@ -233,13 +158,8 @@ def on_generate_complex_and_transform(fft_len, selected_transform):
     duration = time.time() - start_time
     messagebox.showinfo("Czas operacji", f"Czas wykonania transformacji: {duration:.4f} sekund")
 
-
-
-    # Zapis transformacji
-    should_save = messagebox.askyesno("Zapis transformacji", "Czy chcesz zapisać wynik transformacji?")
-    if should_save:
-        signal_type = f"Transformacja: {selected_transform}"
-        save_complex_signal(transformed, params1, signal_type)  # zakładam, że masz już tę funkcję
+    signal_type = f"Transformacja: {selected_transform}"
+    save_complex_signal(transformed, params1, signal_type)  # zakładam, że masz już tę funkcję
 
     print("Transformacja zakończona.")
 
