@@ -3,7 +3,7 @@ import Transformations_functions as tf
 import Transformations_windows as tw
 import File_operations as fo
 import pickle
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, simpledialog
 import time
 
 
@@ -26,15 +26,32 @@ import time
 #     return freq_domain, time, signal_type
 
 
-def save_complex_signal(freq_domain, time, signal_type, params=None):
-    file_path = filedialog.asksaveasfilename(defaultextension=".pkl", filetypes=[("Plik Pickle", "*.pkl")])
-    if file_path:
-        real_part = np.real(freq_domain)
-        imag_part = np.imag(freq_domain)
-        with open(file_path, 'wb') as f:
-            # Zapisujemy części jako osobne tablice
-            pickle.dump((time, real_part, imag_part, params, signal_type), f)
-        print(f"Części rzeczywiste i urojone zapisane do {file_path}")
+def save_complex_signal(signal, params, signal_type):
+    file_path = filedialog.asksaveasfilename(defaultextension=".pkl", filetypes=[("Pickle", "*.pkl")])
+    if not file_path:
+        return
+
+    fs = None
+    if params and isinstance(params, dict):
+        fs = params.get("fs", None)
+
+    if fs is None:
+        fs = simpledialog.askfloat("Brak fs", "Podaj częstotliwość próbkowania (fs):")
+        if fs is None:
+            messagebox.showwarning("Anulowano", "Nie podano częstotliwości próbkowania.")
+            return
+        params = params or {}
+        params["fs"] = fs
+
+    time = np.arange(len(signal)) / fs
+    real_part = np.real(signal)
+    imag_part = np.imag(signal)
+
+    with open(file_path, 'wb') as f:
+        pickle.dump((time, real_part, imag_part, params, signal_type), f)
+
+    print(f"Sygnał zespolony zapisany do {file_path}")
+
 
 
 def load_complex_signal():
@@ -154,6 +171,10 @@ def update_plot_after_operation(time, freq_domain, params, operation_type, mode=
 #
 #     print("Transformacja zakończona i wynik zapisany.")
 
+def nearest_lower_power_of_two(n):
+    return 2 ** (n.bit_length() - 1)
+
+
 def on_generate_complex_and_transform(fft_len, selected_transform):
     print("Wybierz sygnał dla części rzeczywistej:")
     time1, signal1, params1, signal_type1 = fo.load_signal()
@@ -168,32 +189,43 @@ def on_generate_complex_and_transform(fft_len, selected_transform):
         print("Błąd: sygnały muszą mieć taki sam czas.")
         return
 
-    # Budujemy sygnał zespolony
     complex_signal = np.array(signal1) + 1j * np.array(signal2)
     combined_signal_type = f"Zespolony: {signal_type1} + i{signal_type2}"
 
-    # Wykonujemy transformację na sygnale zespolonym
+    # Upewnij się, że długość sygnału nie przekracza fft_len
+    max_len = min(len(complex_signal), fft_len)
+
+    # Dla FFT/FCT: znajdź najbliższą potęgę 2
+    if selected_transform in ["FFT_DIT", "FFT_DIF", "FCT", "FWHT"]:
+        fft_len_adjusted = nearest_lower_power_of_two(max_len)
+        print(f"Dostosowano długość do {fft_len_adjusted} (najbliższa potęga 2)")
+    else:
+        fft_len_adjusted = max_len
+
+    signal_for_transform = complex_signal[:fft_len_adjusted]
+
+    # Wykonaj transformację
     start_time = time.time()
 
     if selected_transform == "DFT":
-        transformed = tf.dft(complex_signal[:fft_len])
+        transformed = tf.dft(signal_for_transform)
     elif selected_transform == "FFT_DIT":
-        transformed = tf.fft_dit(complex_signal[:fft_len])
+        transformed = tf.fft_dit(signal_for_transform)
     elif selected_transform == "FFT_DIF":
-        transformed = tf.fft_dif(complex_signal[:fft_len])
+        transformed = tf.fft_dif(signal_for_transform)
     elif selected_transform == "DCT":
-        transformed = tf.dct(np.real(complex_signal[:fft_len]))
+        transformed = tf.dct(np.real(signal_for_transform))
     elif selected_transform == "FCT":
-        transformed = tf.fct(np.real(complex_signal[:fft_len]))
+        transformed = tf.fct(np.real(signal_for_transform))
     elif selected_transform == "WHT":
-        transformed = tf.wht(np.real(complex_signal[:fft_len]))
+        transformed = tf.wht(np.real(signal_for_transform))
     elif selected_transform == "FWHT":
-        transformed = tf.fwht(np.real(complex_signal[:fft_len]))
+        transformed = tf.fwht(np.real(signal_for_transform))
     elif selected_transform == "Wavelet":
-        a, d = tf.wavelet_transform(np.real(complex_signal[:fft_len]))
+        a, d = tf.wavelet_transform(np.real(signal_for_transform))
         transformed = (a, d)
     elif selected_transform == "FastWavelet":
-        transformed = tf.wavelet_fast_transform(np.real(complex_signal[:fft_len]))
+        transformed = tf.wavelet_fast_transform(np.real(signal_for_transform))
     else:
         messagebox.showerror("Błąd", "Nieobsługiwany typ transformacji.")
         return
@@ -201,14 +233,14 @@ def on_generate_complex_and_transform(fft_len, selected_transform):
     duration = time.time() - start_time
     messagebox.showinfo("Czas operacji", f"Czas wykonania transformacji: {duration:.4f} sekund")
 
+
+
+    # Zapis transformacji
     should_save = messagebox.askyesno("Zapis transformacji", "Czy chcesz zapisać wynik transformacji?")
     if should_save:
-        if isinstance(transformed, tuple):
-            transformed = np.concatenate(transformed)
-
-        transform_type = f"Transformacja: {selected_transform}"
-        dummy_time = time1[:len(transformed)] if len(time1) >= len(transformed) else np.linspace(0, 1, len(transformed))
-        save_complex_signal(transformed, dummy_time, transform_type, params1)
+        signal_type = f"Transformacja: {selected_transform}"
+        save_complex_signal(transformed, params1, signal_type)  # zakładam, że masz już tę funkcję
 
     print("Transformacja zakończona.")
+
 

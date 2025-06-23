@@ -154,32 +154,30 @@ db_filters = {
 
 def wavelet_transform(signal, wavelet='db4'):
     signal = np.asarray(signal, dtype=float)
-    h = db_filters[wavelet]
-    g = h[::-1].copy()
-    g[::2] *= -1  # High-pass (detail)
-
-    N = len(signal)
+    h = db_filters[wavelet]  # Low-pass (approximation)
     l = len(h)
+
+    # High-pass (detail) - quadrature mirror filter
+    g = h[::-1].copy()
+    g[::2] *= -1
+
+    # Padding signal symetrycznie
+    padded = np.pad(signal, (l//2, l//2), mode='symmetric')
+
     approx = []
     detail = []
 
-    # Padding signal (wrap mode)
-    extended = np.concatenate([signal[-l + 1:], signal, signal[:l - 1]])
-
-    for i in range(0, N, 2):
-        a = np.sum(extended[i:i + l] * h)
-        d = np.sum(extended[i:i + l] * g)
+    for i in range(0, len(signal), 2):
+        a = np.dot(padded[i:i + l], h)
+        d = np.dot(padded[i:i + l], g)
         approx.append(a)
         detail.append(d)
 
     return np.array(approx), np.array(detail)
 
 
+
 def wavelet_fast_transform(signal):
-    """
-    Szybka transformata falkowa typu Haar z użyciem tylko numpy.
-    Zwraca połączone współczynniki przybliżeń i szczegółów.
-    """
     signal = np.array(signal, dtype=float)
     n = len(signal)
 
