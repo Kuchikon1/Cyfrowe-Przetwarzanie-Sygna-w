@@ -68,30 +68,41 @@ def dct(x):
 
 
 def fct(x):
+    def fast_dct2_recursive(x):
+        N = len(x)
+        if N == 1:
+            return np.sqrt(2) * x.copy()
+
+        if N % 2 != 0:
+            raise ValueError("Długość sygnału musi być potęgą 2")
+
+        # Podział sygnału na parzyste i nieparzyste elementy
+        even = x[::2]
+        odd = x[1::2][::-1]  # odwrotna kolejność!
+
+        # Rekurencja
+        X_even = fast_dct2_recursive(even)
+        X_odd = fast_dct2_recursive(odd)
+
+        # Obliczanie współczynników
+        result = np.zeros(N)
+        for k in range(N // 2):
+            cos_term = np.cos(np.pi * (2 * k + 1) / (2 * N))
+            result[k] = X_even[k] + cos_term * X_odd[k]
+            result[N - 1 - k] = X_even[k] - cos_term * X_odd[k]
+
+        return result
+
     x = np.asarray(x, dtype=float)
     N = len(x)
-
-    if N == 1:
-        return np.sqrt(2) * x.copy()
-
-    if N % 2 != 0:
+    if not (N != 0 and ((N & (N - 1)) == 0)):
         raise ValueError("Długość sygnału musi być potęgą 2")
 
-    # Podział sygnału na parzyste i nieparzyste elementy
-    even = x[::2]
-    odd = x[1::2][::-1]  # odwrotna kolejność!
+    result = fast_dct2_recursive(x)
 
-    # Rekurencja
-    X_even = fast_dct2_recursive(even)
-    X_odd = fast_dct2_recursive(odd)
-
-    # Obliczanie współczynników
-    result = np.zeros(N)
-    for k in range(N // 2):
-        cos_term = np.cos(np.pi * (2 * k + 1) / (2 * N))
-        result[k] = X_even[k] + cos_term * X_odd[k]
-        result[N - 1 - k] = X_even[k] - cos_term * X_odd[k]
-
+    # Normalizacja (opcjonalna, jak w zwykłej DCT-II)
+    result[0] *= 1 / np.sqrt(N)
+    result[1:] *= np.sqrt(2 / N)
     return result
 
 
